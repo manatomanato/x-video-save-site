@@ -23,11 +23,16 @@ app.use(express.json());
 app.use(cookieParser());
 app.use("/public", express.static(path.join(__dirname, "public")));
 
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, "data");
 const PUBLIC_DIR = path.join(__dirname, "public");
-const CACHE_DIR = path.join(PUBLIC_DIR, "cache");
+const CACHE_DIR = path.join(DATA_DIR, "cache");
+
+fs.mkdirSync(DATA_DIR, { recursive: true });
 fs.mkdirSync(CACHE_DIR, { recursive: true });
 
-const db = new Database("ranking.db");
+app.use("/cache", express.static(CACHE_DIR));
+
+const db = new Database(path.join(DATA_DIR, "ranking.db"));
 
 db.exec(`
 CREATE TABLE IF NOT EXISTS posts (
@@ -527,7 +532,7 @@ app.get("/download", (req, res) => {
 
     const cachePath = path.join(CACHE_DIR, `${postId}.mp4`);
     fs.copyFileSync(filePath, cachePath);
-    updatePostMeta(postUrl, { previewPath: `/public/cache/${postId}.mp4` });
+    updatePostMeta(postUrl, { previewPath: `/cache/${postId}.mp4` });
 
     recordSave(postUrl);
 
@@ -570,8 +575,8 @@ app.post("/admin/delete", requireAdmin, (req, res) => {
   `).run(post.id);
 
   if (post.preview_path) {
-    const relativePath = post.preview_path.replace("/public/", "");
-    const filePath = path.join(PUBLIC_DIR, relativePath);
+    const relativePath = post.preview_path.replace("/cache/", "");
+    const filePath = path.join(CACHE_DIR, relativePath);
 
     try {
       if (fs.existsSync(filePath)) {
