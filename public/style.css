@@ -1,0 +1,357 @@
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background: #f3f4f8;
+  color: #222;
+}
+
+.container {
+  max-width: 940px;
+  margin: 0 auto;
+  padding: 24px 16px 40px;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 28px;
+}
+
+.admin-badge {
+  margin: 0 auto 16px;
+  max-width: 200px;
+  text-align: center;
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-weight: bold;
+}
+
+.form-box {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  background: #fff;
+  border-radius: 20px;
+  padding: 20px;
+}
+
+.form-box-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.url-input {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 18px;
+  padding: 14px;
+  border: 2px solid #d8dbe6;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.button-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  min-width: 110px;
+  text-align: center;
+  padding: 14px 22px;
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 999px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  color: white;
+}
+
+.btn-blue {
+  background: #3b82f6;
+}
+
+.btn-pink {
+  background: #ec4899;
+}
+
+.reset-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.result-card,
+.ranking-section {
+  margin-top: 18px;
+  background: #fff;
+  border-radius: 20px;
+  padding: 20px;
+}
+
+.result-item + .result-item {
+  margin-top: 18px;
+}
+
+.label {
+  display: inline-block;
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.value {
+  font-size: 16px;
+  color: #333;
+}
+
+.break {
+  word-break: break-all;
+}
+
+.message {
+  margin-top: 20px;
+  background: #f6eabf;
+  border: 1px solid #ebd37a;
+  padding: 14px;
+  border-radius: 12px;
+}
+
+.download-btn {
+  display: inline-block;
+  padding: 12px 22px;
+  background: #16a34a;
+  color: white;
+  text-decoration: none;
+  border-radius: 999px;
+  font-weight: bold;
+}
+
+.iphone-note {
+  margin-top: 18px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #eef6ff;
+  border: 1px solid #cfe3ff;
+  line-height: 1.8;
+}
+
+.ranking-section h2 {
+  margin-top: 0;
+  margin-bottom: 14px;
+  font-size: 22px;
+}
+
+.ranking-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.ranking-tab {
+  border: 2px solid #d8dbe6;
+  background: #f8f8fb;
+  color: #333;
+  border-radius: 999px;
+  padding: 12px 22px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.ranking-tab.active {
+  background: #ec4899;
+  border-color: #ec4899;
+  color: white;
+}
+
+.ranking-panel {
+  display: none;
+}
+
+.ranking-panel.active {
+  display: block;
+}
+
+.ranking-card {
+  padding: 20px 0;
+  border-bottom: 1px solid #ececec;
+}
+
+.ranking-card:last-child {
+  border-bottom: none;
+}
+
+.ranking-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.ranking-rank {
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.ranking-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.tweet-link {
+  color: #1d4ed8;
+  font-size: 28px;
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.ranking-count {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.ranking-video {
+  width: 100%;
+  max-width: 640px;
+  border-radius: 18px;
+  background: #000;
+  display: block;
+}
+
+.no-video {
+  padding: 20px;
+  border-radius: 14px;
+  background: #f7f7f7;
+  color: #666;
+}
+
+.admin-topbar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.admin-badge {
+  text-align: center;
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-weight: bold;
+}
+
+.logout-btn {
+  background: #111827;
+  color: white;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.admin-delete-form {
+  margin-top: 12px;
+}
+
+.delete-btn {
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.admin-login-link-wrap {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.admin-login-link {
+  color: #2563eb;
+  text-decoration: underline;
+  font-weight: bold;
+}
+
+.empty {
+  color: #777;
+}
+
+.site-footer {
+  margin-top: 28px;
+  padding: 20px 0 8px;
+  display: flex;
+  gap: 18px;
+  justify-content: center;
+  flex-wrap: wrap;
+  font-size: 14px;
+}
+
+.site-footer a {
+  color: #2563eb;
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+@media (max-width: 600px) {
+  .container {
+    padding: 16px 12px 28px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .url-input {
+    font-size: 16px;
+  }
+
+  .btn {
+    width: 100%;
+  }
+
+  .button-row {
+    flex-direction: column;
+  }
+
+  .ranking-tabs {
+    flex-direction: row;
+    gap: 8px;
+  }
+
+  .ranking-tab {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 8px;
+    font-size: 16px;
+  }
+
+  .tweet-link {
+    font-size: 22px;
+  }
+
+  .ranking-count {
+    font-size: 18px;
+  }
+
+  .ranking-rank {
+    font-size: 24px;
+  }
+}
