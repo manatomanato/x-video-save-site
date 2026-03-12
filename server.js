@@ -73,6 +73,20 @@ function extractPostId(url) {
   return match ? match[1] : null;
 }
 
+function getWritableCookiesFile() {
+  if (!YTDLP_COOKIES_FILE) return "";
+
+  const tempCookiesPath = path.join(os.tmpdir(), "twitter-cookies.txt");
+
+  try {
+    fs.copyFileSync(YTDLP_COOKIES_FILE, tempCookiesPath);
+    return tempCookiesPath;
+  } catch (e) {
+    console.error("cookies copy error:", e);
+    return "";
+  }
+}
+
 function buildAdminToken() {
   return `${ADMIN_COOKIE_SECRET}::ok`;
 }
@@ -149,9 +163,12 @@ function getRanking(range) {
 function getTweetInfo(postUrl) {
   return new Promise((resolve, reject) => {
     const args = [];
-    if (YTDLP_COOKIES_FILE) {
-      args.push("--cookies", YTDLP_COOKIES_FILE);
+    const writableCookiesFile = getWritableCookiesFile();
+
+    if (writableCookiesFile) {
+      args.push("--cookies", writableCookiesFile);
     }
+
     args.push("-J", postUrl);
 
     execFile(
@@ -511,9 +528,12 @@ app.get("/download", (req, res) => {
   const outputTemplate = path.join(tempDir, `${postId}.%(ext)s`);
 
   const args = [];
-  if (YTDLP_COOKIES_FILE) {
-    args.push("--cookies", YTDLP_COOKIES_FILE);
+  const writableCookiesFile = getWritableCookiesFile();
+
+  if (writableCookiesFile) {
+    args.push("--cookies", writableCookiesFile);
   }
+
   args.push(
     "-f",
     "bv*+ba/b",
