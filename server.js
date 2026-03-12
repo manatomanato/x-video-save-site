@@ -15,13 +15,15 @@ const PORT = process.env.PORT || 3000;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "change-me";
 const ADMIN_COOKIE_SECRET = process.env.ADMIN_COOKIE_SECRET || "change-cookie-secret";
 
+const SITE_NAME = "twingsSaveClip";
+const PAGE_TITLE = "動画保存ランキング";
+
 const TERMS_URL = "https://sites.google.com/view/puraibas/%E3%83%9B%E3%83%BC%E3%83%A0?authuser=1";
 const DELETE_REQUEST_URL = "https://tally.so/r/gDA1yl";
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
-app.use("/public", express.static(path.join(__dirname, "public")));
 
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, "data");
 const PUBLIC_DIR = path.join(__dirname, "public");
@@ -30,6 +32,7 @@ const CACHE_DIR = path.join(DATA_DIR, "cache");
 fs.mkdirSync(DATA_DIR, { recursive: true });
 fs.mkdirSync(CACHE_DIR, { recursive: true });
 
+app.use("/public", express.static(PUBLIC_DIR));
 app.use("/cache", express.static(CACHE_DIR));
 
 const db = new Database(path.join(DATA_DIR, "ranking.db"));
@@ -174,7 +177,7 @@ function renderLoginPage(message = "") {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ツイッター保存ランキング 管理者ログイン</title>
+  <title>${escapeHtml(PAGE_TITLE)} 管理者ログイン</title>
   <link rel="stylesheet" href="/public/style.css">
 </head>
 <body>
@@ -276,12 +279,12 @@ function renderPage({
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ツイッター保存ランキング</title>
+  <title>${escapeHtml(PAGE_TITLE)}</title>
   <link rel="stylesheet" href="/public/style.css">
 </head>
 <body>
   <div class="container">
-    <h1 class="title">ツイッター保存ランキング</h1>
+    <h1 class="title">${escapeHtml(SITE_NAME)}</h1>
 
     ${
       adminMode
@@ -359,7 +362,7 @@ function renderPage({
     }
 
     <div class="ranking-section">
-      <h2>保存ランキング</h2>
+      <h2>${escapeHtml(PAGE_TITLE)}</h2>
 
       <div class="ranking-tabs">
         <button class="ranking-tab active" data-tab="tab-24h" type="button">24時間</button>
