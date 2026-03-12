@@ -14,6 +14,7 @@ const PORT = process.env.PORT || 3000;
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "change-me";
 const ADMIN_COOKIE_SECRET = process.env.ADMIN_COOKIE_SECRET || "change-cookie-secret";
+const YTDLP_COOKIES_FILE = process.env.YTDLP_COOKIES_FILE || "";
 
 const SITE_NAME = "twingsSaveClip";
 const PAGE_TITLE = "動画保存ランキング";
@@ -147,9 +148,15 @@ function getRanking(range) {
 
 function getTweetInfo(postUrl) {
   return new Promise((resolve, reject) => {
+    const args = [];
+    if (YTDLP_COOKIES_FILE) {
+      args.push("--cookies", YTDLP_COOKIES_FILE);
+    }
+    args.push("-J", postUrl);
+
     execFile(
       "yt-dlp",
-      ["-J", postUrl],
+      args,
       { maxBuffer: 1024 * 1024 * 20 },
       (error, stdout, stderr) => {
         if (error) {
@@ -503,7 +510,11 @@ app.get("/download", (req, res) => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "xdl-"));
   const outputTemplate = path.join(tempDir, `${postId}.%(ext)s`);
 
-  const args = [
+  const args = [];
+  if (YTDLP_COOKIES_FILE) {
+    args.push("--cookies", YTDLP_COOKIES_FILE);
+  }
+  args.push(
     "-f",
     "bv*+ba/b",
     "--merge-output-format",
@@ -511,7 +522,7 @@ app.get("/download", (req, res) => {
     "-o",
     outputTemplate,
     postUrl
-  ];
+  );
 
   execFile("yt-dlp", args, { maxBuffer: 1024 * 1024 * 20 }, (error, stdout, stderr) => {
     if (error) {
