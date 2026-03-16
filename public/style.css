@@ -8,50 +8,12 @@ body {
 .container {
   max-width: 940px;
   margin: 0 auto;
-  padding: 0 16px 40px;
-}
-
-.top-mini-nav {
-  display: flex;
-  gap: 0;
-  background: #25a7ea;
-  border-radius: 0;
-  overflow: hidden;
-  margin-bottom: 16px;
-}
-
-.mini-nav-btn {
-  flex: 0 0 auto;
-  min-width: 88px;
-  padding: 10px 16px;
-  border: none;
-  background: transparent;
-  color: white;
-  font-size: 15px;
-  font-weight: bold;
-  cursor: pointer;
-  border-right: 1px solid rgba(255, 255, 255, 0.25);
-}
-
-.mini-nav-btn:last-child {
-  border-right: none;
-}
-
-.mini-nav-btn.active {
-  background: rgba(255, 255, 255, 0.25);
-}
-
-.page-section {
-  display: none;
-}
-
-.page-section.active {
-  display: block;
+  padding: 24px 16px 40px;
 }
 
 .title {
   text-align: center;
-  margin: 20px 0;
+  margin-bottom: 20px;
   font-size: 28px;
 }
 
@@ -350,22 +312,11 @@ body {
 
 @media (max-width: 600px) {
   .container {
-    padding: 0 12px 28px;
-  }
-
-  .top-mini-nav {
-    margin-bottom: 12px;
-  }
-
-  .mini-nav-btn {
-    min-width: 72px;
-    padding: 10px 12px;
-    font-size: 14px;
+    padding: 16px 12px 28px;
   }
 
   .title {
     font-size: 24px;
-    margin: 16px 0;
   }
 
   .url-input {
