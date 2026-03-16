@@ -19,8 +19,10 @@ const YTDLP_COOKIES_FILE = process.env.YTDLP_COOKIES_FILE || "";
 const SITE_NAME = "twingsSaveClip";
 const PAGE_TITLE = "動画保存ランキング";
 
-const TERMS_URL = "https://sites.google.com/view/puraibas/%E3%83%9B%E3%83%BC%E3%83%A0?authuser=1";
+const TERMS_URL =
+  "https://sites.google.com/view/puraibas/%E3%83%9B%E3%83%BC%E3%83%A0?authuser=1";
 const DELETE_REQUEST_URL = "https://tally.so/r/gDA1yl";
+
 const JUICYADS_SITE_VERIFICATION =
   '<meta name="juicyads-site-verification" content="0b4d908f6177832d4534d82aa7ac267d">';
 
@@ -35,32 +37,31 @@ const CACHE_DIR = path.join(DATA_DIR, "cache");
 fs.mkdirSync(DATA_DIR, { recursive: true });
 fs.mkdirSync(CACHE_DIR, { recursive: true });
 
-app.use(express.static(PUBLIC_DIR));
 app.use("/public", express.static(PUBLIC_DIR));
 app.use("/cache", express.static(CACHE_DIR));
 
 const db = new Database(path.join(DATA_DIR, "ranking.db"));
 
 db.exec(`
-CREATE TABLE IF NOT EXISTS posts (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  post_url TEXT NOT NULL UNIQUE,
-  post_id TEXT,
-  thumbnail_url TEXT,
-  preview_path TEXT,
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
+  CREATE TABLE IF NOT EXISTS posts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    post_url TEXT NOT NULL UNIQUE,
+    post_id TEXT,
+    thumbnail_url TEXT,
+    preview_path TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
 
-CREATE TABLE IF NOT EXISTS save_events (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  post_id INTEGER NOT NULL,
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  FOREIGN KEY(post_id) REFERENCES posts(id)
-);
+  CREATE TABLE IF NOT EXISTS save_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    post_id INTEGER NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY(post_id) REFERENCES posts(id)
+  );
 
-CREATE INDEX IF NOT EXISTS idx_posts_post_url ON posts(post_url);
-CREATE INDEX IF NOT EXISTS idx_save_events_post_id ON save_events(post_id);
-CREATE INDEX IF NOT EXISTS idx_save_events_created_at ON save_events(created_at);
+  CREATE INDEX IF NOT EXISTS idx_posts_post_url ON posts(post_url);
+  CREATE INDEX IF NOT EXISTS idx_save_events_post_id ON save_events(post_id);
+  CREATE INDEX IF NOT EXISTS idx_save_events_created_at ON save_events(created_at);
 `);
 
 function escapeHtml(str = "") {
@@ -141,9 +142,9 @@ function recordSave(postUrl) {
 }
 
 function getRanking(range) {
-  let sinceExpr = `datetime('now', '-1 day')`;
-  if (range === "7d") sinceExpr = `datetime('now', '-7 day')`;
-  if (range === "30d") sinceExpr = `datetime('now', '-30 day')`;
+  let sinceExpr = "datetime('now', '-1 day')";
+  if (range === "7d") sinceExpr = "datetime('now', '-7 day')";
+  if (range === "30d") sinceExpr = "datetime('now', '-30 day')";
 
   return db.prepare(`
     SELECT
@@ -187,7 +188,7 @@ function getTweetInfo(postUrl) {
         try {
           const data = JSON.parse(stdout);
           resolve({
-            thumbnailUrl: data.thumbnail || null
+            thumbnailUrl: data.thumbnail || null,
           });
         } catch (e) {
           reject(e.message);
@@ -198,14 +199,13 @@ function getTweetInfo(postUrl) {
 }
 
 function renderLoginPage(message = "") {
-  return `
-<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${escapeHtml(PAGE_TITLE)} 管理者ログイン</title>
   ${JUICYADS_SITE_VERIFICATION}
+  <title>${escapeHtml(PAGE_TITLE)} 管理者ログイン</title>
   <link rel="stylesheet" href="/public/style.css">
 </head>
 <body>
@@ -224,6 +224,7 @@ function renderLoginPage(message = "") {
           placeholder="パスワードを入力"
           required
         />
+
         <div class="button-row">
           <button type="submit" class="btn btn-blue">ログイン</button>
           <a href="/" class="btn btn-pink reset-link">戻る</a>
@@ -232,8 +233,7 @@ function renderLoginPage(message = "") {
     </div>
   </div>
 </body>
-</html>
-  `;
+</html>`;
 }
 
 function renderRankingItems(items, adminMode = false) {
@@ -241,53 +241,46 @@ function renderRankingItems(items, adminMode = false) {
     return `<div class="empty">まだランキングデータがありません</div>`;
   }
 
-  return items.map((item, index) => {
-    const hasVideo = !!item.preview_path;
-    const posterAttr = item.thumbnail_url
-      ? `poster="${escapeHtml(item.thumbnail_url)}"`
-      : "";
+  return items
+    .map((item, index) => {
+      const hasVideo = !!item.preview_path;
+      const posterAttr = item.thumbnail_url
+        ? `poster="${escapeHtml(item.thumbnail_url)}"`
+        : "";
 
-    return `
-      <div class="ranking-card">
+      return `<div class="ranking-card">
         <div class="ranking-top">
           <div class="ranking-rank">#${index + 1}</div>
           <div class="ranking-meta">
-            <a class="tweet-link" href="${escapeHtml(item.post_url)}" target="_blank" rel="noopener noreferrer">Xツイート</a>
+            <a
+              class="tweet-link"
+              href="${escapeHtml(item.post_url)}"
+              target="_blank"
+              rel="noopener noreferrer"
+            >Xツイート</a>
             <div class="ranking-count">${item.save_count}回保存</div>
           </div>
         </div>
 
         ${
           hasVideo
-            ? `
-              <video
-                class="ranking-video"
-                controls
-                preload="metadata"
-                playsinline
-                ${posterAttr}
-              >
+            ? `<video class="ranking-video" controls preload="metadata" playsinline ${posterAttr}>
                 <source src="${escapeHtml(item.preview_path)}" type="video/mp4">
-              </video>
-            `
-            : `
-              <div class="no-video">まだ動画プレビューがありません</div>
-            `
+              </video>`
+            : `<div class="no-video">まだ動画プレビューがありません</div>`
         }
 
         ${
           adminMode
-            ? `
-              <form method="POST" action="/admin/delete" class="admin-delete-form">
+            ? `<form method="POST" action="/admin/delete" class="admin-delete-form">
                 <input type="hidden" name="postUrl" value="${escapeHtml(item.post_url)}">
                 <button type="submit" class="delete-btn">このランキングを削除</button>
-              </form>
-            `
+              </form>`
             : ""
         }
-      </div>
-    `;
-  }).join("");
+      </div>`;
+    })
+    .join("");
 }
 
 function renderPage({
@@ -295,20 +288,19 @@ function renderPage({
   postId = "",
   message = "",
   canDownload = false,
-  adminMode = false
+  adminMode = false,
 }) {
   const ranking24h = getRanking("24h");
   const ranking7d = getRanking("7d");
   const ranking30d = getRanking("30d");
 
-  return `
-<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${escapeHtml(PAGE_TITLE)}</title>
   ${JUICYADS_SITE_VERIFICATION}
+  <title>${escapeHtml(PAGE_TITLE)}</title>
   <link rel="stylesheet" href="/public/style.css">
 </head>
 <body>
@@ -322,19 +314,15 @@ function renderPage({
 
     ${
       adminMode
-        ? `
-          <div class="admin-topbar">
+        ? `<div class="admin-topbar">
             <div class="admin-badge">管理者モード</div>
             <form method="POST" action="/admin/logout">
               <button type="submit" class="logout-btn">ログアウト</button>
             </form>
-          </div>
-        `
-        : `
-          <div class="admin-login-link-wrap">
+          </div>`
+        : `<div class="admin-login-link-wrap">
             <a href="/admin/login" class="admin-login-link">管理者ログイン</a>
-          </div>
-        `
+          </div>`
     }
 
     <div id="save-page" class="page-section">
@@ -358,41 +346,36 @@ function renderPage({
 
       ${
         inputUrl
-          ? `
-          <div class="result-card">
-            <div class="result-item">
-              <span class="label">元URL</span>
-              <div class="value break">${escapeHtml(inputUrl)}</div>
-            </div>
+          ? `<div class="result-card">
+              <div class="result-item">
+                <span class="label">元URL</span>
+                <div class="value break">${escapeHtml(inputUrl)}</div>
+              </div>
 
-            <div class="result-item">
-              <span class="label">post_id</span>
-              <div class="value">${escapeHtml(postId || "取得できませんでした")}</div>
-            </div>
+              <div class="result-item">
+                <span class="label">post_id</span>
+                <div class="value">${escapeHtml(postId || "取得できませんでした")}</div>
+              </div>
 
-            ${
-              canDownload
-                ? `
-                <div class="result-item">
-                  <span class="label">保存</span>
-                  <div style="margin-top:12px;">
-                    <a href="/download?postUrl=${encodeURIComponent(inputUrl)}" class="download-btn">
-                      ダウンロード
-                    </a>
-                  </div>
-                </div>
-
-                <div class="iphone-note">
-                  <strong>iPhoneの方へ</strong><br>
-                  ダウンロード後に自動保存されない場合は、開いた動画画面で<br>
-                  <strong>共有 → ファイルに保存</strong><br>
-                  を使って保存してください。
-                </div>
-                `
-                : ""
-            }
-          </div>
-          `
+              ${
+                canDownload
+                  ? `<div class="result-item">
+                      <span class="label">保存</span>
+                      <div style="margin-top:12px;">
+                        <a href="/download?postUrl=${encodeURIComponent(inputUrl)}" class="download-btn">
+                          ダウンロード
+                        </a>
+                      </div>
+                    </div>
+                    <div class="iphone-note">
+                      <strong>iPhoneの方へ</strong><br>
+                      ダウンロード後に自動保存されない場合は、開いた動画画面で<br>
+                      <strong>共有 → ファイルに保存</strong><br>
+                      を使って保存してください。
+                    </div>`
+                  : ""
+              }
+            </div>`
           : ""
       }
     </div>
@@ -439,10 +422,8 @@ function renderPage({
     miniNavBtns.forEach((btn) => {
       btn.addEventListener("click", () => {
         const targetId = btn.dataset.page;
-
         miniNavBtns.forEach((b) => b.classList.remove("active"));
         pageSections.forEach((section) => section.classList.remove("active"));
-
         btn.classList.add("active");
         document.getElementById(targetId).classList.add("active");
       });
@@ -454,24 +435,19 @@ function renderPage({
     tabs.forEach((tab) => {
       tab.addEventListener("click", () => {
         const targetId = tab.dataset.tab;
-
         tabs.forEach((t) => t.classList.remove("active"));
         panels.forEach((p) => p.classList.remove("active"));
-
         tab.classList.add("active");
         document.getElementById(targetId).classList.add("active");
       });
     });
   </script>
 </body>
-</html>
-  `;
+</html>`;
 }
 
 app.get("/", (req, res) => {
-  res.send(renderPage({
-    adminMode: isAdmin(req)
-  }));
+  res.send(renderPage({ adminMode: isAdmin(req) }));
 });
 
 app.get("/admin/login", (req, res) => {
@@ -492,7 +468,7 @@ app.post("/admin/login", (req, res) => {
     httpOnly: true,
     sameSite: "lax",
     secure: false,
-    maxAge: 1000 * 60 * 60 * 24 * 7
+    maxAge: 1000 * 60 * 60 * 24 * 7,
   });
 
   res.redirect("/");
@@ -507,10 +483,12 @@ app.post("/extract", async (req, res) => {
   const postUrl = String(req.body.postUrl || "").trim();
 
   if (!postUrl) {
-    return res.send(renderPage({
-      message: "URLを入力してください",
-      adminMode: isAdmin(req)
-    }));
+    return res.send(
+      renderPage({
+        message: "URLを入力してください",
+        adminMode: isAdmin(req),
+      })
+    );
   }
 
   const postId = extractPostId(postUrl);
@@ -520,7 +498,7 @@ app.post("/extract", async (req, res) => {
       renderPage({
         inputUrl: postUrl,
         message: "status/数字 を含むXのURLを入れてください",
-        adminMode: isAdmin(req)
+        adminMode: isAdmin(req),
       })
     );
   }
@@ -540,7 +518,7 @@ app.post("/extract", async (req, res) => {
       postId,
       canDownload: true,
       message: "抜き出し完了。ダウンロードボタンを押してください。",
-      adminMode: isAdmin(req)
+      adminMode: isAdmin(req),
     })
   );
 });
@@ -555,10 +533,9 @@ app.get("/download", (req, res) => {
   const postId = extractPostId(postUrl) || "video";
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "xdl-"));
   const outputTemplate = path.join(tempDir, `${postId}.%(ext)s`);
-
   const args = [];
-  const writableCookiesFile = getWritableCookiesFile();
 
+  const writableCookiesFile = getWritableCookiesFile();
   if (writableCookiesFile) {
     args.push("--cookies", writableCookiesFile);
   }
@@ -595,8 +572,8 @@ app.get("/download", (req, res) => {
 
     const cachePath = path.join(CACHE_DIR, `${postId}.mp4`);
     fs.copyFileSync(filePath, cachePath);
-    updatePostMeta(postUrl, { previewPath: `/cache/${postId}.mp4` });
 
+    updatePostMeta(postUrl, { previewPath: `/cache/${postId}.mp4` });
     recordSave(postUrl);
 
     res.download(filePath, `${postId}.mp4`, (downloadErr) => {
