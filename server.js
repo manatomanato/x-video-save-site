@@ -35,6 +35,7 @@ const CACHE_DIR = path.join(DATA_DIR, "cache");
 fs.mkdirSync(DATA_DIR, { recursive: true });
 fs.mkdirSync(CACHE_DIR, { recursive: true });
 
+app.use(express.static(PUBLIC_DIR));
 app.use("/public", express.static(PUBLIC_DIR));
 app.use("/cache", express.static(CACHE_DIR));
 
