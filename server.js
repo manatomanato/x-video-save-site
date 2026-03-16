@@ -24,7 +24,7 @@ const TERMS_URL =
 const DELETE_REQUEST_URL = "https://tally.so/r/gDA1yl";
 
 const JUICYADS_SITE_VERIFICATION =
-  '<meta name="juicyads-site-verification" content="0b4d908f6177832d4534d82aa7ac267d">';
+  '<meta name="juicyads-site-verification" content="0b4d908f6177832d4534d82aa7aa267d">';
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -499,6 +499,7 @@ app.post("/extract", async (req, res) => {
         inputUrl: postUrl,
         message: "status/数字 を含むXのURLを入れてください",
         adminMode: isAdmin(req),
+        canDownload: false,
       })
     );
   }
