@@ -308,6 +308,11 @@ function renderPage({
 </head>
 <body>
   <div class="container">
+    <div class="top-mini-nav">
+      <button class="mini-nav-btn" data-page="save-page" type="button">保存</button>
+      <button class="mini-nav-btn active" data-page="ranking-page" type="button">ランキング</button>
+    </div>
+
     <h1 class="title">${escapeHtml(SITE_NAME)}</h1>
 
     ${
@@ -327,83 +332,87 @@ function renderPage({
         `
     }
 
-    <form method="POST" action="/extract" class="form-box">
-      <input
-        type="url"
-        name="postUrl"
-        class="url-input"
-        placeholder="ここにURLをペースト"
-        value="${escapeHtml(inputUrl)}"
-        required
-      />
+    <div id="save-page" class="page-section">
+      <form method="POST" action="/extract" class="form-box">
+        <input
+          type="url"
+          name="postUrl"
+          class="url-input"
+          placeholder="ここにURLをペースト"
+          value="${escapeHtml(inputUrl)}"
+          required
+        />
 
-      <div class="button-row">
-        <button type="submit" class="btn btn-blue">抜き出し</button>
-        <a href="/" class="btn btn-pink reset-link">リセット</a>
-      </div>
-    </form>
-
-    ${message ? `<div class="message">${escapeHtml(message)}</div>` : ""}
-
-    ${
-      inputUrl
-        ? `
-        <div class="result-card">
-          <div class="result-item">
-            <span class="label">元URL</span>
-            <div class="value break">${escapeHtml(inputUrl)}</div>
-          </div>
-
-          <div class="result-item">
-            <span class="label">post_id</span>
-            <div class="value">${escapeHtml(postId || "取得できませんでした")}</div>
-          </div>
-
-          ${
-            canDownload
-              ? `
-              <div class="result-item">
-                <span class="label">保存</span>
-                <div style="margin-top:12px;">
-                  <a href="/download?postUrl=${encodeURIComponent(inputUrl)}" class="download-btn">
-                    ダウンロード
-                  </a>
-                </div>
-              </div>
-
-              <div class="iphone-note">
-                <strong>iPhoneの方へ</strong><br>
-                ダウンロード後に自動保存されない場合は、開いた動画画面で<br>
-                <strong>共有 → ファイルに保存</strong><br>
-                を使って保存してください。
-              </div>
-              `
-              : ""
-          }
+        <div class="button-row">
+          <button type="submit" class="btn btn-blue">抜き出し</button>
+          <a href="/" class="btn btn-pink reset-link">リセット</a>
         </div>
-        `
-        : ""
-    }
+      </form>
 
-    <div class="ranking-section">
-      <h2>${escapeHtml(PAGE_TITLE)}</h2>
+      ${message ? `<div class="message">${escapeHtml(message)}</div>` : ""}
 
-      <div class="ranking-tabs">
-        <button class="ranking-tab active" data-tab="tab-24h" type="button">24時間</button>
-        <button class="ranking-tab" data-tab="tab-7d" type="button">1週間</button>
-        <button class="ranking-tab" data-tab="tab-30d" type="button">1か月</button>
-      </div>
+      ${
+        inputUrl
+          ? `
+          <div class="result-card">
+            <div class="result-item">
+              <span class="label">元URL</span>
+              <div class="value break">${escapeHtml(inputUrl)}</div>
+            </div>
 
-      <div id="tab-24h" class="ranking-panel active">
-        ${renderRankingItems(ranking24h, adminMode)}
-      </div>
+            <div class="result-item">
+              <span class="label">post_id</span>
+              <div class="value">${escapeHtml(postId || "取得できませんでした")}</div>
+            </div>
 
-      <div id="tab-7d" class="ranking-panel">
-        ${renderRankingItems(ranking7d, adminMode)}
-      </div>
+            ${
+              canDownload
+                ? `
+                <div class="result-item">
+                  <span class="label">保存</span>
+                  <div style="margin-top:12px;">
+                    <a href="/download?postUrl=${encodeURIComponent(inputUrl)}" class="download-btn">
+                      ダウンロード
+                    </a>
+                  </div>
+                </div>
 
-      <div id="tab-30d" class="ranking-panel">
-        ${renderRankingItems(ranking30d, adminMode)}
+                <div class="iphone-note">
+                  <strong>iPhoneの方へ</strong><br>
+                  ダウンロード後に自動保存されない場合は、開いた動画画面で<br>
+                  <strong>共有 → ファイルに保存</strong><br>
+                  を使って保存してください。
+                </div>
+                `
+                : ""
+            }
+          </div>
+          `
+          : ""
+      }
+    </div>
+
+    <div id="ranking-page" class="page-section active">
+      <div class="ranking-section">
+        <h2>保存ランキング</h2>
+
+        <div class="ranking-tabs">
+          <button class="ranking-tab active" data-tab="tab-24h" type="button">24時間</button>
+          <button class="ranking-tab" data-tab="tab-7d" type="button">1週間</button>
+          <button class="ranking-tab" data-tab="tab-30d" type="button">1か月</button>
+        </div>
+
+        <div id="tab-24h" class="ranking-panel active">
+          ${renderRankingItems(ranking24h, adminMode)}
+        </div>
+
+        <div id="tab-7d" class="ranking-panel">
+          ${renderRankingItems(ranking7d, adminMode)}
+        </div>
+
+        <div id="tab-30d" class="ranking-panel">
+          ${renderRankingItems(ranking30d, adminMode)}
+        </div>
       </div>
     </div>
 
@@ -419,6 +428,21 @@ function renderPage({
   </div>
 
   <script>
+    const miniNavBtns = document.querySelectorAll(".mini-nav-btn");
+    const pageSections = document.querySelectorAll(".page-section");
+
+    miniNavBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const targetId = btn.dataset.page;
+
+        miniNavBtns.forEach((b) => b.classList.remove("active"));
+        pageSections.forEach((section) => section.classList.remove("active"));
+
+        btn.classList.add("active");
+        document.getElementById(targetId).classList.add("active");
+      });
+    });
+
     const tabs = document.querySelectorAll(".ranking-tab");
     const panels = document.querySelectorAll(".ranking-panel");
 
