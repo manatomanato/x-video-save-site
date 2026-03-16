@@ -8,25 +8,51 @@ body {
 .container {
   max-width: 940px;
   margin: 0 auto;
-  padding: 24px 16px 40px;
+  padding: 0 16px 40px;
+}
+
+.top-mini-nav {
+  display: flex;
+  gap: 0;
+  background: #25a7ea;
+  border-radius: 0;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.mini-nav-btn {
+  flex: 0 0 auto;
+  min-width: 88px;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  color: white;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  border-right: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.mini-nav-btn:last-child {
+  border-right: none;
+}
+
+.mini-nav-btn.active {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.page-section {
+  display: none;
+}
+
+.page-section.active {
+  display: block;
 }
 
 .title {
   text-align: center;
-  margin-bottom: 20px;
+  margin: 20px 0;
   font-size: 28px;
-}
-
-.admin-badge {
-  margin: 0 auto 16px;
-  max-width: 200px;
-  text-align: center;
-  background: #fee2e2;
-  color: #b91c1c;
-  border: 1px solid #fca5a5;
-  border-radius: 999px;
-  padding: 10px 14px;
-  font-weight: bold;
 }
 
 .form-box {
@@ -312,11 +338,12 @@ body {
 
 @media (max-width: 600px) {
   .container {
-    padding: 16px 12px 28px;
+    padding: 0 12px 28px;
   }
 
   .title {
     font-size: 24px;
+    margin: 16px 0;
   }
 
   .url-input {
@@ -353,5 +380,11 @@ body {
 
   .ranking-rank {
     font-size: 24px;
+  }
+
+  .mini-nav-btn {
+    min-width: 72px;
+    padding: 9px 12px;
+    font-size: 14px;
   }
 }
