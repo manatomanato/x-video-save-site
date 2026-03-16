@@ -21,6 +21,8 @@ const PAGE_TITLE = "動画保存ランキング";
 
 const TERMS_URL = "https://sites.google.com/view/puraibas/%E3%83%9B%E3%83%BC%E3%83%A0?authuser=1";
 const DELETE_REQUEST_URL = "https://tally.so/r/gDA1yl";
+const JUICYADS_SITE_VERIFICATION =
+  '<meta name="juicyads-site-verification" content="0b4d908f6177832d4534d82aa7ac267d">';
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -202,6 +204,7 @@ function renderLoginPage(message = "") {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(PAGE_TITLE)} 管理者ログイン</title>
+  ${JUICYADS_SITE_VERIFICATION}
   <link rel="stylesheet" href="/public/style.css">
 </head>
 <body>
@@ -304,6 +307,7 @@ function renderPage({
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(PAGE_TITLE)}</title>
+  ${JUICYADS_SITE_VERIFICATION}
   <link rel="stylesheet" href="/public/style.css">
 </head>
 <body>
