@@ -13,7 +13,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "change-me";
-const ADMIN_COOKIE_SECRET = process.env.ADMIN_COOKIE_SECRET || "change-cookie-secret";
+const ADMIN_COOKIE_SECRET =
+  process.env.ADMIN_COOKIE_SECRET || "change-cookie-secret";
 const YTDLP_COOKIES_FILE = process.env.YTDLP_COOKIES_FILE || "";
 
 const SITE_NAME = "twingsSaveClip";
@@ -36,7 +37,10 @@ const CACHE_DIR = path.join(DATA_DIR, "cache");
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
 fs.mkdirSync(CACHE_DIR, { recursive: true });
+fs.mkdirSync(PUBLIC_DIR, { recursive: true });
 
+// /robots.txt も出せるようにする
+app.use(express.static(PUBLIC_DIR));
 app.use("/public", express.static(PUBLIC_DIR));
 app.use("/cache", express.static(CACHE_DIR));
 
@@ -121,7 +125,10 @@ function ensurePost(postUrl) {
   `).get(postUrl);
 }
 
-function updatePostMeta(postUrl, { thumbnailUrl = null, previewPath = null } = {}) {
+function updatePostMeta(
+  postUrl,
+  { thumbnailUrl = null, previewPath = null } = {}
+) {
   db.prepare(`
     UPDATE posts
     SET
@@ -188,7 +195,7 @@ function getTweetInfo(postUrl) {
         try {
           const data = JSON.parse(stdout);
           resolve({
-            thumbnailUrl: data.thumbnail || null,
+            thumbnailUrl: data.thumbnail || null
           });
         } catch (e) {
           reject(e.message);
@@ -289,10 +296,14 @@ function renderPage({
   message = "",
   canDownload = false,
   adminMode = false,
+  activePage = "ranking"
 }) {
   const ranking24h = getRanking("24h");
   const ranking7d = getRanking("7d");
   const ranking30d = getRanking("30d");
+
+  const isSavePage = activePage === "save";
+  const isRankingPage = activePage === "ranking";
 
   return `<!DOCTYPE html>
 <html lang="ja">
@@ -313,8 +324,8 @@ function renderPage({
 
   <div class="container">
     <div class="top-mini-nav">
-      <button class="mini-nav-btn" data-page="save-page" type="button">保存</button>
-      <button class="mini-nav-btn active" data-page="ranking-page" type="button">ランキング</button>
+      <button class="mini-nav-btn ${isSavePage ? "active" : ""}" data-page="save-page" type="button">保存</button>
+      <button class="mini-nav-btn ${isRankingPage ? "active" : ""}" data-page="ranking-page" type="button">ランキング</button>
     </div>
 
     <h1 class="title">${escapeHtml(SITE_NAME)}</h1>
@@ -332,7 +343,7 @@ function renderPage({
           </div>`
     }
 
-    <div id="save-page" class="page-section">
+    <div id="save-page" class="page-section ${isSavePage ? "active" : ""}">
       <form method="POST" action="/extract" class="form-box">
         <input
           type="url"
@@ -387,7 +398,7 @@ function renderPage({
       }
     </div>
 
-    <div id="ranking-page" class="page-section active">
+    <div id="ranking-page" class="page-section ${isRankingPage ? "active" : ""}">
       <div class="ranking-section">
         <h2>保存ランキング</h2>
 
@@ -413,7 +424,7 @@ function renderPage({
 
     <footer class="site-footer footer-box">
       <div class="footer-text">
-        権利者様から削除依頼をいただいた場合は、匿名でも確認後に削除対応します。
+        。
       </div>
       <div class="footer-links">
         <a href="${TERMS_URL}" target="_blank" rel="noopener noreferrer">利用規約</a>
@@ -454,7 +465,12 @@ function renderPage({
 }
 
 app.get("/", (req, res) => {
-  res.send(renderPage({ adminMode: isAdmin(req) }));
+  res.send(
+    renderPage({
+      adminMode: isAdmin(req),
+      activePage: "ranking"
+    })
+  );
 });
 
 app.get("/admin/login", (req, res) => {
@@ -475,7 +491,7 @@ app.post("/admin/login", (req, res) => {
     httpOnly: true,
     sameSite: "lax",
     secure: false,
-    maxAge: 1000 * 60 * 60 * 24 * 7,
+    maxAge: 1000 * 60 * 60 * 24 * 7
   });
 
   res.redirect("/");
@@ -494,6 +510,7 @@ app.post("/extract", async (req, res) => {
       renderPage({
         message: "URLを入力してください",
         adminMode: isAdmin(req),
+        activePage: "save"
       })
     );
   }
@@ -507,6 +524,7 @@ app.post("/extract", async (req, res) => {
         message: "status/数字 を含むXのURLを入れてください",
         adminMode: isAdmin(req),
         canDownload: false,
+        activePage: "save"
       })
     );
   }
@@ -527,6 +545,7 @@ app.post("/extract", async (req, res) => {
       canDownload: true,
       message: "抜き出し完了。ダウンロードボタンを押してください。",
       adminMode: isAdmin(req),
+      activePage: "save"
     })
   );
 });
@@ -558,45 +577,52 @@ app.get("/download", (req, res) => {
     postUrl
   );
 
-  execFile("yt-dlp", args, { maxBuffer: 1024 * 1024 * 20 }, (error, stdout, stderr) => {
-    if (error) {
-      console.error("yt-dlp download error:", error);
-      console.error(stderr);
-      return res.status(500).send("ダウンロード処理に失敗しました");
+  execFile(
+    "yt-dlp",
+    args,
+    { maxBuffer: 1024 * 1024 * 20 },
+    (error, stdout, stderr) => {
+      if (error) {
+        console.error("yt-dlp download error:", error);
+        console.error(stderr);
+        return res.status(500).send("ダウンロード処理に失敗しました");
+      }
+
+      let filePath = path.join(tempDir, `${postId}.mp4`);
+
+      if (!fs.existsSync(filePath)) {
+        const files = fs.readdirSync(tempDir);
+        const found = files.find((name) => name.endsWith(".mp4")) || files[0];
+
+        if (!found) {
+          return res.status(500).send("保存ファイルが見つかりませんでした");
+        }
+
+        filePath = path.join(tempDir, found);
+      }
+
+      const cachePath = path.join(CACHE_DIR, `${postId}.mp4`);
+      fs.copyFileSync(filePath, cachePath);
+
+      updatePostMeta(postUrl, { previewPath: `/cache/${postId}.mp4` });
+      recordSave(postUrl);
+
+      res.download(filePath, `${postId}.mp4`, (downloadErr) => {
+        try {
+          if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+          if (fs.existsSync(tempDir)) {
+            fs.rmSync(tempDir, { recursive: true, force: true });
+          }
+        } catch (cleanupErr) {
+          console.error("cleanup error:", cleanupErr);
+        }
+
+        if (downloadErr) {
+          console.error("res.download error:", downloadErr);
+        }
+      });
     }
-
-    let filePath = path.join(tempDir, `${postId}.mp4`);
-
-    if (!fs.existsSync(filePath)) {
-      const files = fs.readdirSync(tempDir);
-      const found = files.find((name) => name.endsWith(".mp4")) || files[0];
-
-      if (!found) {
-        return res.status(500).send("保存ファイルが見つかりませんでした");
-      }
-
-      filePath = path.join(tempDir, found);
-    }
-
-    const cachePath = path.join(CACHE_DIR, `${postId}.mp4`);
-    fs.copyFileSync(filePath, cachePath);
-
-    updatePostMeta(postUrl, { previewPath: `/cache/${postId}.mp4` });
-    recordSave(postUrl);
-
-    res.download(filePath, `${postId}.mp4`, (downloadErr) => {
-      try {
-        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-        if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true, force: true });
-      } catch (cleanupErr) {
-        console.error("cleanup error:", cleanupErr);
-      }
-
-      if (downloadErr) {
-        console.error("res.download error:", downloadErr);
-      }
-    });
-  });
+  );
 });
 
 app.post("/admin/delete", requireAdmin, (req, res) => {
