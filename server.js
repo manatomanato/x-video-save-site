@@ -27,6 +27,9 @@ const DELETE_REQUEST_URL = "https://tally.so/r/gDA1yl";
 const JUICYADS_SITE_VERIFICATION =
   '<meta name="juicyads-site-verification" content="0b4d908f6177832d4534d82aa7aa267d">';
 
+const EXOCLICK_SITE_VERIFICATION =
+  '<meta name="6a97888e-site-verification" content="2e9a96a1b9ea6be27758018ad8d6ac35">';
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
@@ -39,7 +42,6 @@ fs.mkdirSync(DATA_DIR, { recursive: true });
 fs.mkdirSync(CACHE_DIR, { recursive: true });
 fs.mkdirSync(PUBLIC_DIR, { recursive: true });
 
-// /robots.txt も出せるようにする
 app.use(express.static(PUBLIC_DIR));
 app.use("/public", express.static(PUBLIC_DIR));
 app.use("/cache", express.static(CACHE_DIR));
@@ -211,6 +213,7 @@ function renderLoginPage(message = "") {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  ${EXOCLICK_SITE_VERIFICATION}
   ${JUICYADS_SITE_VERIFICATION}
   <title>${escapeHtml(PAGE_TITLE)} 管理者ログイン</title>
   <link rel="stylesheet" href="/public/style.css">
@@ -310,6 +313,7 @@ function renderPage({
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  ${EXOCLICK_SITE_VERIFICATION}
   ${JUICYADS_SITE_VERIFICATION}
   <title>${escapeHtml(PAGE_TITLE)}</title>
   <link rel="stylesheet" href="/public/style.css">
@@ -424,7 +428,7 @@ function renderPage({
 
     <footer class="site-footer footer-box">
       <div class="footer-text">
-        。
+        権利者様から削除依頼をいただいた場合は、匿名でも確認後に削除対応します。
       </div>
       <div class="footer-links">
         <a href="${TERMS_URL}" target="_blank" rel="noopener noreferrer">利用規約</a>
