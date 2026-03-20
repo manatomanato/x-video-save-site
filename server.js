@@ -30,6 +30,15 @@ const JUICYADS_SITE_VERIFICATION =
 const EXOCLICK_SITE_VERIFICATION =
   '<meta name="6a97888e-site-verification" content="2e9a96a1b9ea6be27758018ad8d6ac35">';
 
+const EXOCLICK_BANNER_HTML = `
+  <div class="ad-box">
+    <div class="ad-label">広告</div>
+    <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script>
+    <ins class="eas6a97888e2d" data-zoneid="5876658"></ins>
+    <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+  </div>
+`;
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
@@ -327,6 +336,8 @@ function renderPage({
   <!-- JuicyAds Popunder End -->
 
   <div class="container">
+    ${EXOCLICK_BANNER_HTML}
+
     <div class="top-mini-nav">
       <button class="mini-nav-btn ${isSavePage ? "active" : ""}" data-page="save-page" type="button">保存</button>
       <button class="mini-nav-btn ${isRankingPage ? "active" : ""}" data-page="ranking-page" type="button">ランキング</button>
