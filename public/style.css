@@ -56,65 +56,76 @@ body.ad-open {
   position: absolute;
   left: 0;
   right: 0;
+  top: 50%;
+  transform: translateY(-50%);
   display: flex;
   justify-content: center;
   pointer-events: none;
 }
 
-.delayed-ad-sheet-center {
-  top: 50%;
-  bottom: auto;
-  transform: translateY(-50%);
-}
-
 .delayed-ad-inner {
   position: relative;
-  width: 100%;
-  text-align: center;
+  width: 100vw;
+  max-width: 100vw;
   pointer-events: auto;
-}
-
-.delayed-ad-inner-large {
-  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .delayed-ad-adbox {
-  overflow: hidden;
+  position: relative;
+  width: 100vw;
+  overflow: visible;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  display: flex;
+  justify-content: center;
 }
 
-.delayed-ad-adbox-large {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
-  padding: 10px;
+.delayed-ad-scale {
+  width: 300px;
+  height: 250px;
+  transform-origin: top center;
 }
 
 .delayed-ad-label {
+  position: absolute;
+  top: -34px;
+  left: 50%;
+  transform: translateX(-50%);
   font-size: 12px;
   color: #666;
-  margin-bottom: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 4px 10px;
+  border-radius: 999px;
+  z-index: 3;
 }
 
 .delayed-ad-close {
   position: absolute;
-  left: -2px;
-  top: -40px;
-  width: 38px;
-  height: 38px;
+  left: 0;
+  top: -44px;
+  width: 40px;
+  height: 40px;
   border: none;
   background: rgba(0, 0, 0, 0.78);
   color: #fff;
   font-size: 30px;
   line-height: 1;
   cursor: pointer;
-  z-index: 2;
+  z-index: 4;
 }
 
 .delayed-ad-pr {
-  background: #fff;
-  color: #9a9a9a;
+  width: 100vw;
+  text-align: center;
   font-size: 12px;
-  padding-top: 6px;
+  color: #9a9a9a;
+  background: rgba(255, 255, 255, 0.96);
+  margin-top: 8px;
+  padding: 6px 0;
 }
 
 .top-mini-nav {
@@ -368,6 +379,23 @@ body.ad-open {
   color: #666;
 }
 
+.mid-ranking-ad-wrap {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+  background: #000;
+  padding: 0;
+}
+
+.mid-ranking-ad-scale {
+  width: 468px;
+  height: 60px;
+  transform-origin: top center;
+}
+
 .admin-topbar {
   display: flex;
   justify-content: center;
@@ -494,14 +522,10 @@ body.ad-open {
     font-size: 14px;
   }
 
-  .delayed-ad-inner-large {
-    max-width: 320px;
-  }
-
   .delayed-ad-close {
-    top: -36px;
-    width: 34px;
-    height: 34px;
-    font-size: 26px;
+    top: -40px;
+    width: 38px;
+    height: 38px;
+    font-size: 28px;
   }
 }
