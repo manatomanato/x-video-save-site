@@ -17,6 +17,7 @@ body {
   background: #fff;
   border-radius: 14px;
   text-align: center;
+  min-height: 280px;
 }
 
 .ad-label {
