@@ -488,67 +488,70 @@ function renderPage({
   </div>
 
   <script>
-    const miniNavBtns = document.querySelectorAll(".mini-nav-btn");
-    const pageSections = document.querySelectorAll(".page-section");
+  const miniNavBtns = document.querySelectorAll(".mini-nav-btn");
+  const pageSections = document.querySelectorAll(".page-section");
 
-    miniNavBtns.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const targetId = btn.dataset.page;
-        miniNavBtns.forEach((b) => b.classList.remove("active"));
-        pageSections.forEach((section) => section.classList.remove("active"));
-        btn.classList.add("active");
-        document.getElementById(targetId).classList.add("active");
-      });
+  miniNavBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const targetId = btn.dataset.page;
+      miniNavBtns.forEach((b) => b.classList.remove("active"));
+      pageSections.forEach((section) => section.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById(targetId).classList.add("active");
     });
+  });
 
-    const tabs = document.querySelectorAll(".ranking-tab");
-    const panels = document.querySelectorAll(".ranking-panel");
+  const tabs = document.querySelectorAll(".ranking-tab");
+  const panels = document.querySelectorAll(".ranking-panel");
 
-    tabs.forEach((tab) => {
-      tab.addEventListener("click", () => {
-        const targetId = tab.dataset.tab;
-        tabs.forEach((t) => t.classList.remove("active"));
-        panels.forEach((p) => p.classList.remove("active"));
-        tab.classList.add("active");
-        document.getElementById(targetId).classList.add("active");
-      });
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const targetId = tab.dataset.tab;
+      tabs.forEach((t) => t.classList.remove("active"));
+      panels.forEach((p) => p.classList.remove("active"));
+      tab.classList.add("active");
+      document.getElementById(targetId).classList.add("active");
     });
+  });
 
-    const delayedAdOverlay = document.getElementById("delayed-ad-overlay");
-    const delayedAdClose = document.getElementById("delayed-ad-close");
+  const delayedAdOverlay = document.getElementById("delayed-ad-overlay");
+  const delayedAdClose = document.getElementById("delayed-ad-close");
+  const delayedAdInner = document.querySelector(".delayed-ad-inner");
 
-    function openDelayedAd() {
-      if (!delayedAdOverlay) return;
-      delayedAdOverlay.classList.add("show");
-      delayedAdOverlay.setAttribute("aria-hidden", "false");
-      document.body.classList.add("ad-open");
-    }
+  function openDelayedAd() {
+    if (!delayedAdOverlay) return;
+    delayedAdOverlay.classList.add("show");
+    delayedAdOverlay.setAttribute("aria-hidden", "false");
+    document.body.classList.add("ad-open");
+  }
 
-    function closeDelayedAd() {
-      if (!delayedAdOverlay) return;
-      delayedAdOverlay.classList.remove("show");
-      delayedAdOverlay.setAttribute("aria-hidden", "true");
-      document.body.classList.remove("ad-open");
-    }
+  function closeDelayedAd() {
+    if (!delayedAdOverlay) return;
+    delayedAdOverlay.classList.remove("show");
+    delayedAdOverlay.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("ad-open");
+  }
 
-    if (delayedAdClose) {
-      delayedAdClose.addEventListener("click", closeDelayedAd);
-    }
-
-    if (delayedAdOverlay) {
-      delayedAdOverlay.addEventListener("click", (e) => {
-        if (e.target.classList.contains("delayed-ad-backdrop")) {
-          closeDelayedAd();
-        }
-      });
-    }
-
-    window.addEventListener("load", () => {
-      setTimeout(() => {
-        openDelayedAd();
-      }, 10000);
+  if (delayedAdClose) {
+    delayedAdClose.addEventListener("click", (e) => {
+      e.stopPropagation();
+      closeDelayedAd();
     });
-  </script>
+  }
+
+  if (delayedAdInner) {
+    delayedAdInner.addEventListener("click", (e) => {
+      // 広告本体のクリックはそのまま通す
+      e.stopPropagation();
+    });
+  }
+
+  window.addEventListener("load", () => {
+    setTimeout(() => {
+      openDelayedAd();
+    }, 10000);
+  });
+</script>
 </body>
 </html>`;
 }
