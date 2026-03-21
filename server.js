@@ -30,6 +30,24 @@ const JUICYADS_SITE_VERIFICATION =
 const HILLTOPADS_SITE_VERIFICATION =
   '<meta name="88040831fdcd2721c66c823d674b49ff7487458f" content="88040831fdcd2721c66c823d674b49ff7487458f" />';
 
+const HILLTOPADS_BANNER_HTML = `
+  <div class="ad-box">
+    <div class="ad-label">広告</div>
+    <script>
+    (function(cfted){
+      var d = document,
+          s = d.createElement('script'),
+          l = d.scripts[d.scripts.length - 1];
+      s.settings = cfted || {};
+      s.src = "//buttery-sick.com/b.XwV/s/dcGElb0/YbWAcw/ieEmK9OurZJUklXkgP/TeYR4Q/ODtcK1QMhj/EDtFNzjLgd4XNmzWUpy_NnQl";
+      s.async = true;
+      s.referrerPolicy = "no-referrer-when-downgrade";
+      l.parentNode.insertBefore(s, l);
+    })({});
+    </script>
+  </div>
+`;
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
@@ -328,6 +346,8 @@ function renderPage({
   <!-- JuicyAds Popunder End -->
 
   <div class="container">
+    ${HILLTOPADS_BANNER_HTML}
+
     <div class="top-mini-nav">
       <button class="mini-nav-btn ${isSavePage ? "active" : ""}" data-page="save-page" type="button">保存</button>
       <button class="mini-nav-btn ${isRankingPage ? "active" : ""}" data-page="ranking-page" type="button">ランキング</button>
