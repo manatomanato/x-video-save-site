@@ -24,6 +24,10 @@ body.ad-open {
   overflow-x: auto;
 }
 
+.ad-box-small {
+  overflow-x: auto;
+}
+
 .ad-label {
   font-size: 12px;
   color: #666;
@@ -52,27 +56,43 @@ body.ad-open {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 60px;
   display: flex;
   justify-content: center;
   pointer-events: none;
 }
 
+.delayed-ad-sheet-center {
+  top: 50%;
+  bottom: auto;
+  transform: translateY(-50%);
+}
+
 .delayed-ad-inner {
   position: relative;
   width: 100%;
-  max-width: 360px;
   text-align: center;
   pointer-events: auto;
 }
 
+.delayed-ad-inner-large {
+  max-width: 340px;
+}
+
 .delayed-ad-adbox {
-  background: #fff;
-  border-top: 2px solid #f0a0b8;
-  border-left: 2px solid #f0a0b8;
-  border-right: 2px solid #f0a0b8;
-  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.28);
   overflow: hidden;
+}
+
+.delayed-ad-adbox-large {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
+  padding: 10px;
+}
+
+.delayed-ad-label {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 8px;
 }
 
 .delayed-ad-close {
@@ -474,11 +494,7 @@ body.ad-open {
     font-size: 14px;
   }
 
-  .delayed-ad-sheet {
-    bottom: 54px;
-  }
-
-  .delayed-ad-inner {
+  .delayed-ad-inner-large {
     max-width: 320px;
   }
 
