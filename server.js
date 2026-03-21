@@ -30,21 +30,19 @@ const JUICYADS_SITE_VERIFICATION =
 const HILLTOPADS_SITE_VERIFICATION =
   '<meta name="88040831fdcd2721c66c823d674b49ff7487458f" content="88040831fdcd2721c66c823d674b49ff7487458f" />';
 
-const HILLTOPADS_BANNER_HTML = `
+const ADSTERRA_BANNER_HTML = `
   <div class="ad-box">
     <div class="ad-label">広告</div>
     <script>
-    (function(cfted){
-      var d = document,
-          s = d.createElement('script'),
-          l = d.scripts[d.scripts.length - 1];
-      s.settings = cfted || {};
-      s.src = "//buttery-sick.com/b.XwV/s/dcGElb0/YbWAcw/ieEmK9OurZJUklXkgP/TeYR4Q/ODtcK1QMhj/EDtFNzjLgd4XNmzWUpy_NnQl";
-      s.async = true;
-      s.referrerPolicy = "no-referrer-when-downgrade";
-      l.parentNode.insertBefore(s, l);
-    })({});
+      atOptions = {
+        'key' : '4be475e8caf50119f9384052ede10934',
+        'format' : 'iframe',
+        'height' : 250,
+        'width' : 300,
+        'params' : {}
+      };
     </script>
+    <script src="https://www.highperformanceformat.com/4be475e8caf50119f9384052ede10934/invoke.js"></script>
   </div>
 `;
 
@@ -346,7 +344,7 @@ function renderPage({
   <!-- JuicyAds Popunder End -->
 
   <div class="container">
-    ${HILLTOPADS_BANNER_HTML}
+    ${ADSTERRA_BANNER_HTML}
 
     <div class="top-mini-nav">
       <button class="mini-nav-btn ${isSavePage ? "active" : ""}" data-page="save-page" type="button">保存</button>
