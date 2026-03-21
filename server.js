@@ -18,7 +18,7 @@ const ADMIN_COOKIE_SECRET =
 const YTDLP_COOKIES_FILE = process.env.YTDLP_COOKIES_FILE || "";
 
 const SITE_NAME = "twingsSaveClip";
-const PAGE_TITLE = "動画保存ランキング";
+const PAGE_TITLE = " Twitter動画保存ランキング";
 
 const TERMS_URL =
   "https://sites.google.com/view/puraibas/%E3%83%9B%E3%83%BC%E3%83%A0?authuser=1";
@@ -27,17 +27,8 @@ const DELETE_REQUEST_URL = "https://tally.so/r/gDA1yl";
 const JUICYADS_SITE_VERIFICATION =
   '<meta name="juicyads-site-verification" content="0b4d908f6177832d4534d82aa7aa267d">';
 
-const EXOCLICK_SITE_VERIFICATION =
-  '<meta name="6a97888e-site-verification" content="2e9a96a1b9ea6be27758018ad8d6ac35">';
-
-const EXOCLICK_BANNER_HTML = `
-  <div class="ad-box">
-    <div class="ad-label">広告</div>
-    <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script>
-    <ins class="eas6a97888e2d" data-zoneid="5876658"></ins>
-    <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
-  </div>
-`;
+const HILLTOPADS_SITE_VERIFICATION =
+  '<meta name="88040831fdcd2721c66c823d674b49ff7487458f" content="88040831fdcd2721c66c823d674b49ff7487458f" />';
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -85,6 +76,17 @@ function escapeHtml(str = "") {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+function renderHead(title) {
+  return `
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  ${HILLTOPADS_SITE_VERIFICATION}
+  ${JUICYADS_SITE_VERIFICATION}
+  <title>${escapeHtml(title)}</title>
+  <link rel="stylesheet" href="/public/style.css">
+  `;
 }
 
 function extractPostId(url) {
@@ -220,12 +222,7 @@ function renderLoginPage(message = "") {
   return `<!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  ${EXOCLICK_SITE_VERIFICATION}
-  ${JUICYADS_SITE_VERIFICATION}
-  <title>${escapeHtml(PAGE_TITLE)} 管理者ログイン</title>
-  <link rel="stylesheet" href="/public/style.css">
+  ${renderHead(`${PAGE_TITLE} 管理者ログイン`)}
 </head>
 <body>
   <div class="container">
@@ -320,12 +317,7 @@ function renderPage({
   return `<!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  ${EXOCLICK_SITE_VERIFICATION}
-  ${JUICYADS_SITE_VERIFICATION}
-  <title>${escapeHtml(PAGE_TITLE)}</title>
-  <link rel="stylesheet" href="/public/style.css">
+  ${renderHead(PAGE_TITLE)}
 </head>
 <body>
   <!-- JuicyAds Popunder Start -->
@@ -336,8 +328,6 @@ function renderPage({
   <!-- JuicyAds Popunder End -->
 
   <div class="container">
-    ${EXOCLICK_BANNER_HTML}
-
     <div class="top-mini-nav">
       <button class="mini-nav-btn ${isSavePage ? "active" : ""}" data-page="save-page" type="button">保存</button>
       <button class="mini-nav-btn ${isRankingPage ? "active" : ""}" data-page="ranking-page" type="button">ランキング</button>
