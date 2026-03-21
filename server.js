@@ -18,7 +18,7 @@ const ADMIN_COOKIE_SECRET =
 const YTDLP_COOKIES_FILE = process.env.YTDLP_COOKIES_FILE || "";
 
 const SITE_NAME = "twingsSaveClip";
-const PAGE_TITLE = "Twitter動画保存ランキング";
+const PAGE_TITLE = "動画保存ランキング";
 
 const TERMS_URL =
   "https://sites.google.com/view/puraibas/%E3%83%9B%E3%83%BC%E3%83%A0?authuser=1";
