@@ -46,6 +46,40 @@ const ADSTERRA_BANNER_HTML = `
   </div>
 `;
 
+const DELAYED_320x50_AD_HTML = `
+  <div id="delayed-ad-overlay" class="delayed-ad-overlay" aria-hidden="true">
+    <div class="delayed-ad-backdrop"></div>
+
+    <div class="delayed-ad-sheet" role="dialog" aria-modal="true" aria-label="広告">
+      <button
+        type="button"
+        id="delayed-ad-close"
+        class="delayed-ad-close"
+        aria-label="広告を閉じる"
+      >
+        ×
+      </button>
+
+      <div class="delayed-ad-inner">
+        <div class="delayed-ad-adbox">
+          <script>
+            atOptions = {
+              'key' : 'e8f854e6e42402f8799f86a8a2431403',
+              'format' : 'iframe',
+              'height' : 50,
+              'width' : 320,
+              'params' : {}
+            };
+          </script>
+          <script src="https://www.highperformanceformat.com/e8f854e6e42402f8799f86a8a2431403/invoke.js"></script>
+        </div>
+
+        <div class="delayed-ad-pr">[PR]</div>
+      </div>
+    </div>
+  </div>
+`;
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
@@ -106,7 +140,7 @@ function renderHead(title) {
 }
 
 function extractPostId(url) {
-  const match = String(url).match(/status\/(\d+)/);
+  const match = String(url).match(/status\\/(\\d+)/);
   return match ? match[1] : null;
 }
 
@@ -343,6 +377,8 @@ function renderPage({
   ></script>
   <!-- JuicyAds Popunder End -->
 
+  ${DELAYED_320x50_AD_HTML}
+
   <div class="container">
     ${ADSTERRA_BANNER_HTML}
 
@@ -447,7 +483,7 @@ function renderPage({
 
     <footer class="site-footer footer-box">
       <div class="footer-text">
-        権利者様から削除依頼をいただいた場合は、匿名でも確認後に削除対応します。
+        。
       </div>
       <div class="footer-links">
         <a href="${TERMS_URL}" target="_blank" rel="noopener noreferrer">利用規約</a>
@@ -481,6 +517,41 @@ function renderPage({
         tab.classList.add("active");
         document.getElementById(targetId).classList.add("active");
       });
+    });
+
+    const delayedAdOverlay = document.getElementById("delayed-ad-overlay");
+    const delayedAdClose = document.getElementById("delayed-ad-close");
+
+    function openDelayedAd() {
+      if (!delayedAdOverlay) return;
+      delayedAdOverlay.classList.add("show");
+      delayedAdOverlay.setAttribute("aria-hidden", "false");
+      document.body.classList.add("ad-open");
+    }
+
+    function closeDelayedAd() {
+      if (!delayedAdOverlay) return;
+      delayedAdOverlay.classList.remove("show");
+      delayedAdOverlay.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("ad-open");
+    }
+
+    if (delayedAdClose) {
+      delayedAdClose.addEventListener("click", closeDelayedAd);
+    }
+
+    if (delayedAdOverlay) {
+      delayedAdOverlay.addEventListener("click", (e) => {
+        if (e.target.classList.contains("delayed-ad-backdrop")) {
+          closeDelayedAd();
+        }
+      });
+    }
+
+    window.addEventListener("load", () => {
+      setTimeout(() => {
+        openDelayedAd();
+      }, 10000);
     });
   </script>
 </body>
