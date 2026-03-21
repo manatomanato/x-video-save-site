@@ -46,31 +46,54 @@ const ADSTERRA_BANNER_320x50_HTML = `
   </div>
 `;
 
+const MID_RANKING_468x60_AD_HTML = `
+  <div class="mid-ranking-ad-wrap">
+    <div class="mid-ranking-ad-scale" id="mid-ranking-ad-scale">
+      <script>
+        atOptions = {
+          key: "987cc07119919973c6701daf205f0b4e",
+          format: "iframe",
+          height: 60,
+          width: 468,
+          params: {}
+        };
+      </script>
+      <script src="https://www.highperformanceformat.com/987cc07119919973c6701daf205f0b4e/invoke.js"></script>
+    </div>
+  </div>
+`;
+
 const DELAYED_300x250_AD_HTML = `
   <div id="delayed-ad-overlay" class="delayed-ad-overlay" aria-hidden="true">
     <div class="delayed-ad-backdrop"></div>
 
-    <div class="delayed-ad-sheet delayed-ad-sheet-center" role="dialog" aria-modal="true" aria-label="広告">
-      <button
-        type="button"
-        id="delayed-ad-close"
-        class="delayed-ad-close"
-        aria-label="広告を閉じる"
-      >×</button>
+    <div class="delayed-ad-sheet" role="dialog" aria-modal="true" aria-label="広告">
+      <div class="delayed-ad-inner">
+        <button
+          type="button"
+          id="delayed-ad-close"
+          class="delayed-ad-close"
+          aria-label="広告を閉じる"
+        >×</button>
 
-      <div class="delayed-ad-inner delayed-ad-inner-large">
-        <div class="delayed-ad-adbox delayed-ad-adbox-large">
+        <div class="delayed-ad-adbox">
           <div class="delayed-ad-label">広告</div>
-          <script>
-            atOptions = {
-              key: "4be475e8caf50119f9384052ede10934",
-              format: "iframe",
-              height: 250,
-              width: 300,
-              params: {}
-            };
-          </script>
-          <script src="https://www.highperformanceformat.com/4be475e8caf50119f9384052ede10934/invoke.js"></script>
+
+          <div
+            class="delayed-ad-scale"
+            id="delayed-ad-scale"
+          >
+            <script>
+              atOptions = {
+                key: "4be475e8caf50119f9384052ede10934",
+                format: "iframe",
+                height: 250,
+                width: 300,
+                params: {}
+              };
+            </script>
+            <script src="https://www.highperformanceformat.com/4be475e8caf50119f9384052ede10934/invoke.js"></script>
+          </div>
         </div>
 
         <div class="delayed-ad-pr">[PR]</div>
@@ -313,7 +336,7 @@ function renderRankingItems(items, adminMode = false) {
         ? `poster="${escapeHtml(item.thumbnail_url)}"`
         : "";
 
-      return `<div class="ranking-card">
+      const cardHtml = `<div class="ranking-card">
         <div class="ranking-top">
           <div class="ranking-rank">#${index + 1}</div>
           <div class="ranking-meta">
@@ -344,6 +367,12 @@ function renderRankingItems(items, adminMode = false) {
             : ""
         }
       </div>`;
+
+      if (index === 5) {
+        return cardHtml + MID_RANKING_468x60_AD_HTML;
+      }
+
+      return cardHtml;
     })
     .join("");
 }
@@ -488,70 +517,106 @@ function renderPage({
   </div>
 
   <script>
-  const miniNavBtns = document.querySelectorAll(".mini-nav-btn");
-  const pageSections = document.querySelectorAll(".page-section");
+    const miniNavBtns = document.querySelectorAll(".mini-nav-btn");
+    const pageSections = document.querySelectorAll(".page-section");
 
-  miniNavBtns.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const targetId = btn.dataset.page;
-      miniNavBtns.forEach((b) => b.classList.remove("active"));
-      pageSections.forEach((section) => section.classList.remove("active"));
-      btn.classList.add("active");
-      document.getElementById(targetId).classList.add("active");
+    miniNavBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const targetId = btn.dataset.page;
+        miniNavBtns.forEach((b) => b.classList.remove("active"));
+        pageSections.forEach((section) => section.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById(targetId).classList.add("active");
+      });
     });
-  });
 
-  const tabs = document.querySelectorAll(".ranking-tab");
-  const panels = document.querySelectorAll(".ranking-panel");
+    const tabs = document.querySelectorAll(".ranking-tab");
+    const panels = document.querySelectorAll(".ranking-panel");
 
-  tabs.forEach((tab) => {
-    tab.addEventListener("click", () => {
-      const targetId = tab.dataset.tab;
-      tabs.forEach((t) => t.classList.remove("active"));
-      panels.forEach((p) => p.classList.remove("active"));
-      tab.classList.add("active");
-      document.getElementById(targetId).classList.add("active");
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const targetId = tab.dataset.tab;
+        tabs.forEach((t) => t.classList.remove("active"));
+        panels.forEach((p) => p.classList.remove("active"));
+        tab.classList.add("active");
+        document.getElementById(targetId).classList.add("active");
+      });
     });
-  });
 
-  const delayedAdOverlay = document.getElementById("delayed-ad-overlay");
-  const delayedAdClose = document.getElementById("delayed-ad-close");
-  const delayedAdInner = document.querySelector(".delayed-ad-inner");
+    const delayedAdOverlay = document.getElementById("delayed-ad-overlay");
+    const delayedAdClose = document.getElementById("delayed-ad-close");
 
-  function openDelayedAd() {
-    if (!delayedAdOverlay) return;
-    delayedAdOverlay.classList.add("show");
-    delayedAdOverlay.setAttribute("aria-hidden", "false");
-    document.body.classList.add("ad-open");
-  }
+    function openDelayedAd() {
+      if (!delayedAdOverlay) return;
+      delayedAdOverlay.classList.add("show");
+      delayedAdOverlay.setAttribute("aria-hidden", "false");
+      document.body.classList.add("ad-open");
+    }
 
-  function closeDelayedAd() {
-    if (!delayedAdOverlay) return;
-    delayedAdOverlay.classList.remove("show");
-    delayedAdOverlay.setAttribute("aria-hidden", "true");
-    document.body.classList.remove("ad-open");
-  }
+    function closeDelayedAd() {
+      if (!delayedAdOverlay) return;
+      delayedAdOverlay.classList.remove("show");
+      delayedAdOverlay.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("ad-open");
+    }
 
-  if (delayedAdClose) {
-    delayedAdClose.addEventListener("click", (e) => {
-      e.stopPropagation();
-      closeDelayedAd();
+    function fitDelayedAdToScreen() {
+      const adScale = document.getElementById("delayed-ad-scale");
+      if (!adScale) return;
+
+      const screenW = Math.min(window.innerWidth, document.documentElement.clientWidth);
+      const baseW = 300;
+      const baseH = 250;
+
+      const scale = screenW / baseW;
+      adScale.style.transform = \`scale(\${scale})\`;
+
+      const scaledHeight = baseH * scale;
+      adScale.style.marginBottom = \`\${scaledHeight - baseH}px\`;
+    }
+
+    function fitMidRankingAdToScreen() {
+      const ad = document.getElementById("mid-ranking-ad-scale");
+      if (!ad) return;
+
+      const screenW = Math.min(window.innerWidth, document.documentElement.clientWidth);
+      const baseW = 468;
+      const baseH = 60;
+
+      const scale = screenW / baseW;
+      ad.style.transform = \`scale(\${scale})\`;
+
+      const scaledHeight = baseH * scale;
+      ad.style.marginBottom = \`\${scaledHeight - baseH}px\`;
+    }
+
+    if (delayedAdClose) {
+      delayedAdClose.addEventListener("click", closeDelayedAd);
+    }
+
+    if (delayedAdOverlay) {
+      delayedAdOverlay.addEventListener("click", (e) => {
+        if (e.target.classList.contains("delayed-ad-backdrop")) {
+          closeDelayedAd();
+        }
+      });
+    }
+
+    window.addEventListener("load", () => {
+      fitDelayedAdToScreen();
+      fitMidRankingAdToScreen();
+
+      setTimeout(() => {
+        openDelayedAd();
+        fitDelayedAdToScreen();
+      }, 10000);
     });
-  }
 
-  if (delayedAdInner) {
-    delayedAdInner.addEventListener("click", (e) => {
-      // 広告本体のクリックはそのまま通す
-      e.stopPropagation();
+    window.addEventListener("resize", () => {
+      fitDelayedAdToScreen();
+      fitMidRankingAdToScreen();
     });
-  }
-
-  window.addEventListener("load", () => {
-    setTimeout(() => {
-      openDelayedAd();
-    }, 10000);
-  });
-</script>
+  </script>
 </body>
 </html>`;
 }
