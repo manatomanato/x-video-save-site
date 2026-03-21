@@ -18,7 +18,7 @@ const ADMIN_COOKIE_SECRET =
 const YTDLP_COOKIES_FILE = process.env.YTDLP_COOKIES_FILE || "";
 
 const SITE_NAME = "twingsSaveClip";
-const PAGE_TITLE = " Twitter動画保存ランキング";
+const PAGE_TITLE = "Twitter動画保存ランキング";
 
 const TERMS_URL =
   "https://sites.google.com/view/puraibas/%E3%83%9B%E3%83%BC%E3%83%A0?authuser=1";
@@ -35,11 +35,11 @@ const ADSTERRA_BANNER_HTML = `
     <div class="ad-label">広告</div>
     <script>
       atOptions = {
-        'key' : '4be475e8caf50119f9384052ede10934',
-        'format' : 'iframe',
-        'height' : 250,
-        'width' : 300,
-        'params' : {}
+        key: "4be475e8caf50119f9384052ede10934",
+        format: "iframe",
+        height: 250,
+        width: 300,
+        params: {}
       };
     </script>
     <script src="https://www.highperformanceformat.com/4be475e8caf50119f9384052ede10934/invoke.js"></script>
@@ -56,19 +56,17 @@ const DELAYED_320x50_AD_HTML = `
         id="delayed-ad-close"
         class="delayed-ad-close"
         aria-label="広告を閉じる"
-      >
-        ×
-      </button>
+      >×</button>
 
       <div class="delayed-ad-inner">
         <div class="delayed-ad-adbox">
           <script>
             atOptions = {
-              'key' : 'e8f854e6e42402f8799f86a8a2431403',
-              'format' : 'iframe',
-              'height' : 50,
-              'width' : 320,
-              'params' : {}
+              key: "e8f854e6e42402f8799f86a8a2431403",
+              format: "iframe",
+              height: 50,
+              width: 320,
+              params: {}
             };
           </script>
           <script src="https://www.highperformanceformat.com/e8f854e6e42402f8799f86a8a2431403/invoke.js"></script>
@@ -140,7 +138,7 @@ function renderHead(title) {
 }
 
 function extractPostId(url) {
-  const match = String(url).match(/status\\/(\\d+)/);
+  const match = String(url).match(/status\/(\d+)/);
   return match ? match[1] : null;
 }
 
@@ -188,10 +186,7 @@ function ensurePost(postUrl) {
   `).get(postUrl);
 }
 
-function updatePostMeta(
-  postUrl,
-  { thumbnailUrl = null, previewPath = null } = {}
-) {
+function updatePostMeta(postUrl, { thumbnailUrl = null, previewPath = null } = {}) {
   db.prepare(`
     UPDATE posts
     SET
@@ -370,12 +365,10 @@ function renderPage({
   ${renderHead(PAGE_TITLE)}
 </head>
 <body>
-  <!-- JuicyAds Popunder Start -->
   <script
     type="text/javascript"
     src="https://js.juicyads.com/jp.php?c=446423z2t294u4r2p294139434&u=https%3A%2F%2Fwww.juicyads.rocks"
   ></script>
-  <!-- JuicyAds Popunder End -->
 
   ${DELAYED_320x50_AD_HTML}
 
@@ -482,9 +475,7 @@ function renderPage({
     </div>
 
     <footer class="site-footer footer-box">
-      <div class="footer-text">
-        。
-      </div>
+      <div class="footer-text"></div>
       <div class="footer-links">
         <a href="${TERMS_URL}" target="_blank" rel="noopener noreferrer">利用規約</a>
         <a href="${DELETE_REQUEST_URL}" target="_blank" rel="noopener noreferrer">削除依頼</a>
