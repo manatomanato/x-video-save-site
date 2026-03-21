@@ -30,27 +30,27 @@ const JUICYADS_SITE_VERIFICATION =
 const HILLTOPADS_SITE_VERIFICATION =
   '<meta name="88040831fdcd2721c66c823d674b49ff7487458f" content="88040831fdcd2721c66c823d674b49ff7487458f" />';
 
-const ADSTERRA_BANNER_HTML = `
-  <div class="ad-box">
+const ADSTERRA_BANNER_320x50_HTML = `
+  <div class="ad-box ad-box-small">
     <div class="ad-label">広告</div>
     <script>
       atOptions = {
-        key: "4be475e8caf50119f9384052ede10934",
+        key: "e8f854e6e42402f8799f86a8a2431403",
         format: "iframe",
-        height: 250,
-        width: 300,
+        height: 50,
+        width: 320,
         params: {}
       };
     </script>
-    <script src="https://www.highperformanceformat.com/4be475e8caf50119f9384052ede10934/invoke.js"></script>
+    <script src="https://www.highperformanceformat.com/e8f854e6e42402f8799f86a8a2431403/invoke.js"></script>
   </div>
 `;
 
-const DELAYED_320x50_AD_HTML = `
+const DELAYED_300x250_AD_HTML = `
   <div id="delayed-ad-overlay" class="delayed-ad-overlay" aria-hidden="true">
     <div class="delayed-ad-backdrop"></div>
 
-    <div class="delayed-ad-sheet" role="dialog" aria-modal="true" aria-label="広告">
+    <div class="delayed-ad-sheet delayed-ad-sheet-center" role="dialog" aria-modal="true" aria-label="広告">
       <button
         type="button"
         id="delayed-ad-close"
@@ -58,18 +58,19 @@ const DELAYED_320x50_AD_HTML = `
         aria-label="広告を閉じる"
       >×</button>
 
-      <div class="delayed-ad-inner">
-        <div class="delayed-ad-adbox">
+      <div class="delayed-ad-inner delayed-ad-inner-large">
+        <div class="delayed-ad-adbox delayed-ad-adbox-large">
+          <div class="delayed-ad-label">広告</div>
           <script>
             atOptions = {
-              key: "e8f854e6e42402f8799f86a8a2431403",
+              key: "4be475e8caf50119f9384052ede10934",
               format: "iframe",
-              height: 50,
-              width: 320,
+              height: 250,
+              width: 300,
               params: {}
             };
           </script>
-          <script src="https://www.highperformanceformat.com/e8f854e6e42402f8799f86a8a2431403/invoke.js"></script>
+          <script src="https://www.highperformanceformat.com/4be475e8caf50119f9384052ede10934/invoke.js"></script>
         </div>
 
         <div class="delayed-ad-pr">[PR]</div>
@@ -186,7 +187,10 @@ function ensurePost(postUrl) {
   `).get(postUrl);
 }
 
-function updatePostMeta(postUrl, { thumbnailUrl = null, previewPath = null } = {}) {
+function updatePostMeta(
+  postUrl,
+  { thumbnailUrl = null, previewPath = null } = {}
+) {
   db.prepare(`
     UPDATE posts
     SET
@@ -370,10 +374,10 @@ function renderPage({
     src="https://js.juicyads.com/jp.php?c=446423z2t294u4r2p294139434&u=https%3A%2F%2Fwww.juicyads.rocks"
   ></script>
 
-  ${DELAYED_320x50_AD_HTML}
+  ${DELAYED_300x250_AD_HTML}
 
   <div class="container">
-    ${ADSTERRA_BANNER_HTML}
+    ${ADSTERRA_BANNER_320x50_HTML}
 
     <div class="top-mini-nav">
       <button class="mini-nav-btn ${isSavePage ? "active" : ""}" data-page="save-page" type="button">保存</button>
