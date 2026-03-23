@@ -617,6 +617,8 @@ function renderPage({
       fitMidRankingAdToScreen();
     });
   </script>
+
+  <script async src="https://pufted.com/p/waWQiOjEyMjIxOTMsInNpZCI6MTcxMDM1OSwid2lkIjo3MzU5OTgsInNyYyI6Mn0=eyJ.js"></script>
 </body>
 </html>`;
 }
