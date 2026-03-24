@@ -252,7 +252,7 @@ function getRanking(range) {
     GROUP BY p.id
     HAVING save_count > 0
     ORDER BY save_count DESC, p.id DESC
-    LIMIT 10
+    LIMIT 30
   `).all();
 }
 
@@ -324,13 +324,14 @@ function renderLoginPage(message = "") {
 </html>`;
 }
 
-function renderRankingItems(items, adminMode = false) {
+function renderRankingItems(items, adminMode = false, startRank = 1) {
   if (!items.length) {
     return `<div class="empty">まだランキングデータがありません</div>`;
   }
 
   return items
     .map((item, index) => {
+      const rank = startRank + index;
       const hasVideo = !!item.preview_path;
       const posterAttr = item.thumbnail_url
         ? `poster="${escapeHtml(item.thumbnail_url)}"`
@@ -338,7 +339,7 @@ function renderRankingItems(items, adminMode = false) {
 
       const cardHtml = `<div class="ranking-card">
         <div class="ranking-top">
-          <div class="ranking-rank">#${index + 1}</div>
+          <div class="ranking-rank">#${rank}</div>
           <div class="ranking-meta">
             <a
               class="tweet-link"
@@ -368,7 +369,7 @@ function renderRankingItems(items, adminMode = false) {
         }
       </div>`;
 
-      if (index === 5) {
+      if (rank === 6) {
         return cardHtml + MID_RANKING_468x60_AD_HTML;
       }
 
@@ -388,6 +389,15 @@ function renderPage({
   const ranking24h = getRanking("24h");
   const ranking7d = getRanking("7d");
   const ranking30d = getRanking("30d");
+
+  const ranking24hTop10 = ranking24h.slice(0, 10);
+  const ranking24h11to30 = ranking24h.slice(10, 30);
+
+  const ranking7dTop10 = ranking7d.slice(0, 10);
+  const ranking7d11to30 = ranking7d.slice(10, 30);
+
+  const ranking30dTop10 = ranking30d.slice(0, 10);
+  const ranking30d11to30 = ranking30d.slice(10, 30);
 
   const isSavePage = activePage === "save";
   const isRankingPage = activePage === "ranking";
@@ -494,15 +504,48 @@ function renderPage({
         </div>
 
         <div id="tab-24h" class="ranking-panel active">
-          ${renderRankingItems(ranking24h, adminMode)}
+          <div class="rank-range-tabs">
+            <button class="rank-range-tab active" data-range="range-24h-top10" type="button">第1位〜第10位</button>
+            <button class="rank-range-tab" data-range="range-24h-11to30" type="button">第11位〜第30位</button>
+          </div>
+
+          <div id="range-24h-top10" class="rank-range-panel active">
+            ${renderRankingItems(ranking24hTop10, adminMode, 1)}
+          </div>
+
+          <div id="range-24h-11to30" class="rank-range-panel">
+            ${renderRankingItems(ranking24h11to30, adminMode, 11)}
+          </div>
         </div>
 
         <div id="tab-7d" class="ranking-panel">
-          ${renderRankingItems(ranking7d, adminMode)}
+          <div class="rank-range-tabs">
+            <button class="rank-range-tab active" data-range="range-7d-top10" type="button">第1位〜第10位</button>
+            <button class="rank-range-tab" data-range="range-7d-11to30" type="button">第11位〜第30位</button>
+          </div>
+
+          <div id="range-7d-top10" class="rank-range-panel active">
+            ${renderRankingItems(ranking7dTop10, adminMode, 1)}
+          </div>
+
+          <div id="range-7d-11to30" class="rank-range-panel">
+            ${renderRankingItems(ranking7d11to30, adminMode, 11)}
+          </div>
         </div>
 
         <div id="tab-30d" class="ranking-panel">
-          ${renderRankingItems(ranking30d, adminMode)}
+          <div class="rank-range-tabs">
+            <button class="rank-range-tab active" data-range="range-30d-top10" type="button">第1位〜第10位</button>
+            <button class="rank-range-tab" data-range="range-30d-11to30" type="button">第11位〜第30位</button>
+          </div>
+
+          <div id="range-30d-top10" class="rank-range-panel active">
+            ${renderRankingItems(ranking30dTop10, adminMode, 1)}
+          </div>
+
+          <div id="range-30d-11to30" class="rank-range-panel">
+            ${renderRankingItems(ranking30d11to30, adminMode, 11)}
+          </div>
         </div>
       </div>
     </div>
@@ -541,6 +584,28 @@ function renderPage({
         tab.classList.add("active");
         document.getElementById(targetId).classList.add("active");
       });
+    });
+
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest(".rank-range-tab");
+      if (!btn) return;
+
+      const parentPanel = btn.closest(".ranking-panel");
+      if (!parentPanel) return;
+
+      parentPanel.querySelectorAll(".rank-range-tab").forEach((tab) => {
+        tab.classList.remove("active");
+      });
+
+      parentPanel.querySelectorAll(".rank-range-panel").forEach((panel) => {
+        panel.classList.remove("active");
+      });
+
+      btn.classList.add("active");
+
+      const targetId = btn.dataset.range;
+      const target = document.getElementById(targetId);
+      if (target) target.classList.add("active");
     });
 
     const delayedAdOverlay = document.getElementById("delayed-ad-overlay");
