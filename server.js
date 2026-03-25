@@ -110,6 +110,9 @@ const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, "data");
 const PUBLIC_DIR = path.join(__dirname, "public");
 const CACHE_DIR = path.join(DATA_DIR, "cache");
 
+const MAX_CACHE_BYTES = 2 * 1024 * 1024 * 1024; // 2GB
+const TARGET_CACHE_BYTES = Math.floor(MAX_CACHE_BYTES * 0.8); // 80%まで減らす
+
 fs.mkdirSync(DATA_DIR, { recursive: true });
 fs.mkdirSync(CACHE_DIR, { recursive: true });
 fs.mkdirSync(PUBLIC_DIR, { recursive: true });
@@ -127,6 +130,7 @@ db.exec(`
     post_id TEXT,
     thumbnail_url TEXT,
     preview_path TEXT,
+    category TEXT NOT NULL DEFAULT 'normal',
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
 
@@ -138,9 +142,20 @@ db.exec(`
   );
 
   CREATE INDEX IF NOT EXISTS idx_posts_post_url ON posts(post_url);
+  CREATE INDEX IF NOT EXISTS idx_posts_category ON posts(category);
   CREATE INDEX IF NOT EXISTS idx_save_events_post_id ON save_events(post_id);
   CREATE INDEX IF NOT EXISTS idx_save_events_created_at ON save_events(created_at);
 `);
+
+try {
+  const columns = db.prepare(`PRAGMA table_info(posts)`).all();
+  const hasCategory = columns.some((col) => col.name === "category");
+  if (!hasCategory) {
+    db.exec(`ALTER TABLE posts ADD COLUMN category TEXT NOT NULL DEFAULT 'normal'`);
+  }
+} catch (e) {
+  console.error("category migration error:", e);
+}
 
 function escapeHtml(str = "") {
   return String(str)
@@ -195,16 +210,27 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-function ensurePost(postUrl) {
+function normalizeCategory(category) {
+  return category === "anime" ? "anime" : "normal";
+}
+
+function ensurePost(postUrl, category = "normal") {
   const postId = extractPostId(postUrl);
+  const normalizedCategory = normalizeCategory(category);
 
   db.prepare(`
-    INSERT OR IGNORE INTO posts (post_url, post_id)
-    VALUES (?, ?)
-  `).run(postUrl, postId);
+    INSERT OR IGNORE INTO posts (post_url, post_id, category)
+    VALUES (?, ?, ?)
+  `).run(postUrl, postId, normalizedCategory);
+
+  db.prepare(`
+    UPDATE posts
+    SET category = COALESCE(category, ?)
+    WHERE post_url = ?
+  `).run(normalizedCategory, postUrl);
 
   return db.prepare(`
-    SELECT id, post_url, post_id, thumbnail_url, preview_path
+    SELECT id, post_url, post_id, thumbnail_url, preview_path, category
     FROM posts
     WHERE post_url = ?
   `).get(postUrl);
@@ -212,19 +238,71 @@ function ensurePost(postUrl) {
 
 function updatePostMeta(
   postUrl,
-  { thumbnailUrl = null, previewPath = null } = {}
+  { thumbnailUrl = null, previewPath = null, category = null } = {}
 ) {
+  const normalizedCategory = category == null ? null : normalizeCategory(category);
+
   db.prepare(`
     UPDATE posts
     SET
       thumbnail_url = COALESCE(?, thumbnail_url),
-      preview_path = COALESCE(?, preview_path)
+      preview_path = COALESCE(?, preview_path),
+      category = COALESCE(?, category)
     WHERE post_url = ?
-  `).run(thumbnailUrl, previewPath, postUrl);
+  `).run(thumbnailUrl, previewPath, normalizedCategory, postUrl);
 }
 
-function recordSave(postUrl) {
-  const post = ensurePost(postUrl);
+function pruneOldCacheFiles(requiredFreeBytes = 0) {
+  try {
+    if (!fs.existsSync(CACHE_DIR)) return;
+
+    const entries = fs.readdirSync(CACHE_DIR)
+      .filter((name) => name.endsWith(".mp4"))
+      .map((name) => {
+        const fullPath = path.join(CACHE_DIR, name);
+        const stat = fs.statSync(fullPath);
+        return {
+          name,
+          fullPath,
+          size: stat.size,
+          mtimeMs: stat.mtimeMs
+        };
+      });
+
+    let totalSize = entries.reduce((sum, file) => sum + file.size, 0);
+    const allowedSizeAfterSave = Math.max(TARGET_CACHE_BYTES - requiredFreeBytes, 0);
+
+    if (totalSize <= allowedSizeAfterSave) {
+      return;
+    }
+
+    entries.sort((a, b) => a.mtimeMs - b.mtimeMs);
+
+    for (const file of entries) {
+      if (totalSize <= allowedSizeAfterSave) break;
+
+      try {
+        fs.unlinkSync(file.fullPath);
+        totalSize -= file.size;
+
+        db.prepare(`
+          UPDATE posts
+          SET preview_path = NULL
+          WHERE preview_path = ?
+        `).run(`/cache/${file.name}`);
+
+        console.log(`cache pruned: ${file.name}`);
+      } catch (e) {
+        console.error("cache prune delete error:", e);
+      }
+    }
+  } catch (e) {
+    console.error("cache prune error:", e);
+  }
+}
+
+function recordSave(postUrl, category = "normal") {
+  const post = ensurePost(postUrl, category);
   if (!post) return;
 
   db.prepare(`
@@ -233,10 +311,17 @@ function recordSave(postUrl) {
   `).run(post.id);
 }
 
-function getRanking(range) {
+function getRanking(range, category = null) {
   let sinceExpr = "datetime('now', '-1 day')";
-  if (range === "7d") sinceExpr = "datetime('now', '-7 day')";
-  if (range === "30d") sinceExpr = "datetime('now', '-30 day')";
+  if (range === "anime") sinceExpr = "datetime('now', '-1 day')";
+
+  const params = [];
+  let whereClause = "";
+
+  if (category) {
+    whereClause = "WHERE p.category = ?";
+    params.push(normalizeCategory(category));
+  }
 
   return db.prepare(`
     SELECT
@@ -244,16 +329,18 @@ function getRanking(range) {
       p.post_id,
       p.thumbnail_url,
       p.preview_path,
+      p.category,
       COUNT(se.id) AS save_count
     FROM posts p
     LEFT JOIN save_events se
       ON se.post_id = p.id
       AND se.created_at >= ${sinceExpr}
+    ${whereClause}
     GROUP BY p.id
     HAVING save_count > 0
     ORDER BY save_count DESC, p.id DESC
     LIMIT 30
-  `).all();
+  `).all(...params);
 }
 
 function getTweetInfo(postUrl) {
@@ -384,23 +471,21 @@ function renderPage({
   message = "",
   canDownload = false,
   adminMode = false,
-  activePage = "ranking"
+  activePage = "ranking",
+  selectedCategory = "normal"
 }) {
   const ranking24h = getRanking("24h");
-  const ranking7d = getRanking("7d");
-  const ranking30d = getRanking("30d");
+  const rankingAnime = getRanking("anime", "anime");
 
   const ranking24hTop10 = ranking24h.slice(0, 10);
   const ranking24h11to30 = ranking24h.slice(10, 30);
 
-  const ranking7dTop10 = ranking7d.slice(0, 10);
-  const ranking7d11to30 = ranking7d.slice(10, 30);
-
-  const ranking30dTop10 = ranking30d.slice(0, 10);
-  const ranking30d11to30 = ranking30d.slice(10, 30);
+  const rankingAnimeTop10 = rankingAnime.slice(0, 10);
+  const rankingAnime11to30 = rankingAnime.slice(10, 30);
 
   const isSavePage = activePage === "save";
   const isRankingPage = activePage === "ranking";
+  const isAnimeSelected = selectedCategory === "anime";
 
   return `<!DOCTYPE html>
 <html lang="ja">
@@ -449,6 +534,17 @@ function renderPage({
           required
         />
 
+        <div class="save-category-row">
+          <label class="category-option">
+            <input type="radio" name="category" value="normal" ${!isAnimeSelected ? "checked" : ""}>
+            <span>通常</span>
+          </label>
+          <label class="category-option">
+            <input type="radio" name="category" value="anime" ${isAnimeSelected ? "checked" : ""}>
+            <span>アニメ</span>
+          </label>
+        </div>
+
         <div class="button-row">
           <button type="submit" class="btn btn-blue">抜き出し</button>
           <a href="/" class="btn btn-pink reset-link">リセット</a>
@@ -470,12 +566,17 @@ function renderPage({
                 <div class="value">${escapeHtml(postId || "取得できませんでした")}</div>
               </div>
 
+              <div class="result-item">
+                <span class="label">カテゴリ</span>
+                <div class="value">${isAnimeSelected ? "アニメ" : "通常"}</div>
+              </div>
+
               ${
                 canDownload
                   ? `<div class="result-item">
                       <span class="label">保存</span>
                       <div style="margin-top:12px;">
-                        <a href="/download?postUrl=${encodeURIComponent(inputUrl)}" class="download-btn">
+                        <a href="/download?postUrl=${encodeURIComponent(inputUrl)}&category=${encodeURIComponent(selectedCategory)}" class="download-btn">
                           ダウンロード
                         </a>
                       </div>
@@ -499,8 +600,7 @@ function renderPage({
 
         <div class="ranking-tabs">
           <button class="ranking-tab active" data-tab="tab-24h" type="button">24時間</button>
-          <button class="ranking-tab" data-tab="tab-7d" type="button">1週間</button>
-          <button class="ranking-tab" data-tab="tab-30d" type="button">1か月</button>
+          <button class="ranking-tab" data-tab="tab-anime" type="button">アニメ</button>
         </div>
 
         <div id="tab-24h" class="ranking-panel active">
@@ -518,33 +618,18 @@ function renderPage({
           </div>
         </div>
 
-        <div id="tab-7d" class="ranking-panel">
+        <div id="tab-anime" class="ranking-panel">
           <div class="rank-range-tabs">
-            <button class="rank-range-tab active" data-range="range-7d-top10" type="button">第1位〜第10位</button>
-            <button class="rank-range-tab" data-range="range-7d-11to30" type="button">第11位〜第30位</button>
+            <button class="rank-range-tab active" data-range="range-anime-top10" type="button">第1位〜第10位</button>
+            <button class="rank-range-tab" data-range="range-anime-11to30" type="button">第11位〜第30位</button>
           </div>
 
-          <div id="range-7d-top10" class="rank-range-panel active">
-            ${renderRankingItems(ranking7dTop10, adminMode, 1)}
+          <div id="range-anime-top10" class="rank-range-panel active">
+            ${renderRankingItems(rankingAnimeTop10, adminMode, 1)}
           </div>
 
-          <div id="range-7d-11to30" class="rank-range-panel">
-            ${renderRankingItems(ranking7d11to30, adminMode, 11)}
-          </div>
-        </div>
-
-        <div id="tab-30d" class="ranking-panel">
-          <div class="rank-range-tabs">
-            <button class="rank-range-tab active" data-range="range-30d-top10" type="button">第1位〜第10位</button>
-            <button class="rank-range-tab" data-range="range-30d-11to30" type="button">第11位〜第30位</button>
-          </div>
-
-          <div id="range-30d-top10" class="rank-range-panel active">
-            ${renderRankingItems(ranking30dTop10, adminMode, 1)}
-          </div>
-
-          <div id="range-30d-11to30" class="rank-range-panel">
-            ${renderRankingItems(ranking30d11to30, adminMode, 11)}
+          <div id="range-anime-11to30" class="rank-range-panel">
+            ${renderRankingItems(rankingAnime11to30, adminMode, 11)}
           </div>
         </div>
       </div>
@@ -692,7 +777,8 @@ app.get("/", (req, res) => {
   res.send(
     renderPage({
       adminMode: isAdmin(req),
-      activePage: "ranking"
+      activePage: "ranking",
+      selectedCategory: "normal"
     })
   );
 });
@@ -728,13 +814,15 @@ app.post("/admin/logout", (req, res) => {
 
 app.post("/extract", async (req, res) => {
   const postUrl = String(req.body.postUrl || "").trim();
+  const category = normalizeCategory(String(req.body.category || "normal"));
 
   if (!postUrl) {
     return res.send(
       renderPage({
         message: "URLを入力してください",
         adminMode: isAdmin(req),
-        activePage: "save"
+        activePage: "save",
+        selectedCategory: category
       })
     );
   }
@@ -748,16 +836,20 @@ app.post("/extract", async (req, res) => {
         message: "status/数字 を含むXのURLを入れてください",
         adminMode: isAdmin(req),
         canDownload: false,
-        activePage: "save"
+        activePage: "save",
+        selectedCategory: category
       })
     );
   }
 
-  ensurePost(postUrl);
+  ensurePost(postUrl, category);
 
   try {
     const info = await getTweetInfo(postUrl);
-    updatePostMeta(postUrl, { thumbnailUrl: info.thumbnailUrl });
+    updatePostMeta(postUrl, {
+      thumbnailUrl: info.thumbnailUrl,
+      category
+    });
   } catch (e) {
     console.error("extract info error:", e);
   }
@@ -769,13 +861,15 @@ app.post("/extract", async (req, res) => {
       canDownload: true,
       message: "抜き出し完了。ダウンロードボタンを押してください。",
       adminMode: isAdmin(req),
-      activePage: "save"
+      activePage: "save",
+      selectedCategory: category
     })
   );
 });
 
 app.get("/download", (req, res) => {
   const postUrl = String(req.query.postUrl || "").trim();
+  const category = normalizeCategory(String(req.query.category || "normal"));
 
   if (!postUrl) {
     return res.status(400).send("URLがありません");
@@ -825,11 +919,25 @@ app.get("/download", (req, res) => {
         filePath = path.join(tempDir, found);
       }
 
-      const cachePath = path.join(CACHE_DIR, `${postId}.mp4`);
-      fs.copyFileSync(filePath, cachePath);
+      try {
+        const newFileSize = fs.statSync(filePath).size;
+        pruneOldCacheFiles(newFileSize);
 
-      updatePostMeta(postUrl, { previewPath: `/cache/${postId}.mp4` });
-      recordSave(postUrl);
+        const cachePath = path.join(CACHE_DIR, `${postId}.mp4`);
+        fs.copyFileSync(filePath, cachePath);
+        updatePostMeta(postUrl, {
+          previewPath: `/cache/${postId}.mp4`,
+          category
+        });
+      } catch (cacheErr) {
+        console.error("cache save error:", cacheErr);
+
+        if (cacheErr.code === "ENOSPC") {
+          console.error("cache disk full: preview cache skipped");
+        }
+      }
+
+      recordSave(postUrl, category);
 
       res.download(filePath, `${postId}.mp4`, (downloadErr) => {
         try {
