@@ -123,6 +123,7 @@ app.use("/cache", express.static(CACHE_DIR));
 
 const db = new Database(path.join(DATA_DIR, "ranking.db"));
 
+// まずは既存DBでも安全に通る最低限の作成
 db.exec(`
   CREATE TABLE IF NOT EXISTS posts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -130,7 +131,6 @@ db.exec(`
     post_id TEXT,
     thumbnail_url TEXT,
     preview_path TEXT,
-    category TEXT NOT NULL DEFAULT 'normal',
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
 
@@ -142,19 +142,32 @@ db.exec(`
   );
 
   CREATE INDEX IF NOT EXISTS idx_posts_post_url ON posts(post_url);
-  CREATE INDEX IF NOT EXISTS idx_posts_category ON posts(category);
   CREATE INDEX IF NOT EXISTS idx_save_events_post_id ON save_events(post_id);
   CREATE INDEX IF NOT EXISTS idx_save_events_created_at ON save_events(created_at);
 `);
 
+// 既存DB用 migration
 try {
   const columns = db.prepare(`PRAGMA table_info(posts)`).all();
   const hasCategory = columns.some((col) => col.name === "category");
+
   if (!hasCategory) {
-    db.exec(`ALTER TABLE posts ADD COLUMN category TEXT NOT NULL DEFAULT 'normal'`);
+    db.exec(`
+      ALTER TABLE posts
+      ADD COLUMN category TEXT NOT NULL DEFAULT 'normal'
+    `);
   }
 } catch (e) {
   console.error("category migration error:", e);
+}
+
+// migration 後に category 用 index を作る
+try {
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_posts_category ON posts(category)
+  `);
+} catch (e) {
+  console.error("category index create error:", e);
 }
 
 function escapeHtml(str = "") {
@@ -225,7 +238,7 @@ function ensurePost(postUrl, category = "normal") {
 
   db.prepare(`
     UPDATE posts
-    SET category = COALESCE(category, ?)
+    SET category = ?
     WHERE post_url = ?
   `).run(normalizedCategory, postUrl);
 
