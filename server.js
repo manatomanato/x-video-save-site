@@ -487,8 +487,8 @@ function renderPage({
   activePage = "ranking",
   selectedCategory = "normal"
 }) {
-  const ranking24h = getRanking("24h");
-  const rankingAnime = getRanking("anime", "anime");
+  const ranking24h = getRanking("24h", "normal");
+const rankingAnime = getRanking("anime", "anime");
 
   const ranking24hTop10 = ranking24h.slice(0, 10);
   const ranking24h11to30 = ranking24h.slice(10, 30);
